@@ -1,0 +1,79 @@
+@import url(vars.css);
+
+#windowWrapper
+{
+	position: fixed;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 100%;
+	background: #111;
+}
+
+#windowWrapper #background
+{
+	background: url(/res/img/loginBG.png);
+	background-position: right;
+	position: relative;
+	top: 0px;
+	left: 0px;
+	display: block;
+	height: inherit;
+	width: inherit;
+	filter: blur(15px)
+}
+
+#windowWrapper #window
+{
+	position: absolute;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-flow: column;
+	z-index: 1;
+	height: 300px;
+	width: 500px;
+	background: rgba(241,234,249, .6);
+	/*border: 2px solid var(--main-bg-color);*/
+	text-align: center;
+	box-shadow: 5px 5px 15px rgba(0,0,0,.3);
+	border-radius: 10px;
+}
+
+#window h1
+{
+	font-weight: 300;
+	color: var(--main-color);
+	display: block;
+}
+
+#window input
+{
+	margin: 10px;
+	padding: 5px;
+	color: var(--main-color);
+	border: 1px solid var(--main-color-2);
+	transition: border .5s;
+	background-color: var(--main-bg-color);
+	outline: none;
+	font-size: 18px;
+	width: 200px;
+	border-radius: 5px;
+}
+
+#window input[type="submit" i]
+{
+	width: auto;
+	background-color: var(--main-bg-color);
+	color: var(--main-color);
+	border: 1px solid var(--main-color-2);
+}
+
+#window input:hover
+{
+	border: 1px solid var(--main-color);
+}
+
