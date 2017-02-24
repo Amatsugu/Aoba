@@ -7,7 +7,8 @@ using Npgsql;
 using Nancy.Authentication.Stateless;
 using LuminousVector.Aoba.Server.Models;
 using LuminousVector.Aoba.Server.DataStore;
-using Nancy.Security;
+using System.Security.Principal;
+using System.Security.Claims;
 using Nancy.Extensions;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
@@ -81,7 +82,7 @@ namespace LuminousVector.Aoba.Server
 			return con;
 		}
 
-		internal static UserModel GetUserFromApiKey(string apiKey)
+		internal static IPrincipal GetUserFromApiKey(string apiKey)
 		{
 			using (var con = GetConnection())
 			{
@@ -90,11 +91,11 @@ namespace LuminousVector.Aoba.Server
 					Console.WriteLine($"Key: {apiKey}");
 					cmd.CommandText = $"SELECT username FROM apiKeys WHERE apiKey = {apiKey}";
 					string username = (string)cmd.ExecuteScalar();
-					
+
 					if (string.IsNullOrWhiteSpace(username))
 						return null;
 					else
-						return new UserModel(username);
+						return new ClaimsPrincipal(new GenericIdentity(username, "stateless"));//new UserModel(username);
 				}
 			}
 		}

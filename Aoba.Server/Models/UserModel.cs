@@ -11,23 +11,15 @@ using System.Security.Principal;
 
 namespace LuminousVector.Aoba.Server.Models
 {
-	class UserModel : IUserIdentity, IIdentity
+	class UserModel : IUserIdentity
 	{
-		public string Name { get; }
-
-		public string AuthenticationType { get; }
-
-		public bool IsAuthenticated { get; }
-
 		public string UserName { get; }
 
 		public IEnumerable<string> Claims { get; }
 
-		public UserModel(string username, string authType = "stateless")
+		public UserModel(string username)
 		{
-			UserName = Name = Uri.EscapeDataString(username);
-			AuthenticationType = authType;
-			IsAuthenticated = true;
+			UserName = Uri.EscapeDataString(username);
 		}
 
 
