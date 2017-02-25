@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LuminousVector.Aoba.Server.Models
+namespace LuminousVector.Aoba.Models
 {
-	public class ApiKeyModel
+	public class AuthToken
 	{
 		public string ApiKey { get; set; }
 	}

@@ -21,8 +21,8 @@
 										<ColumnDefinition Width="*"/>
 										<ColumnDefinition Width="*"/>
 									</Grid.ColumnDefinitions>
-									<CheckBox Content="Copy link to clipbaord" Grid.Column="0" IsChecked="True"/>
-									<CheckBox Content="Open link in browser" Grid.Column="1" IsChecked="False"/>
+									<CheckBox x:Name="CopyLink" Content="Copy link to clipbaord" Grid.Column="0" IsChecked="True"/>
+									<CheckBox x:Name="OpenLink" Content="Open link in browser" Grid.Column="1" IsChecked="False"/>
 								</Grid>
 							</StackPanel>
 						</GroupBox>
@@ -36,9 +36,9 @@
 									<CheckBox x:Name="ToastAll" Content="Show notification toasts" Click="ToastAll_Click" IsChecked="True"/>
 									<GroupBox x:Name="ToastBox" Header="Toasts" Padding="5 0 0 0">
 										<StackPanel>
-											<CheckBox x:Name="ToastCapture" Content="Capture Notifications"/>
 											<CheckBox x:Name="ToastSuccess" Content="Upload Success Notifications" IsChecked="True"/>
 											<CheckBox x:Name="ToastFailed" Content="Upload Failed Notifications" IsChecked="True"/>
+											<CheckBox x:Name="ToastCapture" Content="Capture Notifications"/>
 										</StackPanel>
 									</GroupBox>
 								</StackPanel>
@@ -46,9 +46,9 @@
 									<CheckBox x:Name="SoundAll" Content="Play Sounds" Click="SoundAll_Click" IsChecked="True"/>
 									<GroupBox x:Name="SoundBox" Header="Sounds" Padding="5 0 0 0">
 										<StackPanel>
-											<CheckBox x:Name="SoundCapture" Content="Play Capture Sound"/>
 											<CheckBox x:Name="SoundSuccess" Content="Play Upload Sucess Sound" IsChecked="True"/>
 											<CheckBox x:Name="SoundFailed" Content="Play Upload Failed Sound" IsChecked="True"/>
+											<CheckBox x:Name="SoundCapture" Content="Play Capture Sound"/>
 										</StackPanel>
 									</GroupBox>
 								</StackPanel>

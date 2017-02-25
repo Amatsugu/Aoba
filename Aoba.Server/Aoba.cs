@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,24 +10,33 @@ using LuminousVector.Aoba.Server.Models;
 using LuminousVector.Aoba.Server.DataStore;
 using System.Security.Principal;
 using System.Security.Claims;
+using Nancy.Security;
+using Nancy;
 using Nancy.Extensions;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
+using LuminousVector.Aoba.DataStore;
 
 namespace LuminousVector.Aoba.Server
 {
 	public static class Aoba
 	{
-		public const string HOST = "karuta.luminousvector.com";
+		public const string HOST = "aoba.luminousvector.com";
+
+		
+#if !DEBUG
+		public const string BASE_DIR = "/Storage/Aoba";
+#else
+		public const string BASE_DIR = "K:/Aoba";
+#endif
+		public static string SCREEN_DIR { get { return $"{BASE_DIR}/Screenshots"; } }
 		internal static StatelessAuthenticationConfiguration StatelessConfig = new StatelessAuthenticationConfiguration(nancyContext =>
 		{
-			
-			var apiKey = JsonConvert.DeserializeObject<ApiKeyModel>(nancyContext.Request.Body.AsString()).ApiKey;
-
-
-			return GetUserFromApiKey(apiKey);
+			string ApiKey = nancyContext.Request.Cookies.First(c => c.Key == "ApiKey").Value;
+			Console.WriteLine($"API KEY: {ApiKey}");
+			return GetUserFromApiKey(ApiKey);
 		});
-
 		private static string CONNECTION_STRING { get { return $"Host={HOST};Username={_dbUser};Password={_dbPass};Database={_dbName};Pooling=true"; } }
 		private static string _dbUser, _dbPass, _dbName;
 
@@ -36,6 +46,7 @@ namespace LuminousVector.Aoba.Server
 			_dbPass = dbPass;
 			_dbName = dbName;
 		}
+
 
 		private static string HashPassword(string password)
 		{
@@ -82,20 +93,24 @@ namespace LuminousVector.Aoba.Server
 			return con;
 		}
 
-		internal static IPrincipal GetUserFromApiKey(string apiKey)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="apiKey"></param>
+		/// <returns>The user that belongs to the current apiKey</returns>
+		internal static UserModel GetUserFromApiKey(string apiKey)
 		{
 			using (var con = GetConnection())
 			{
 				using (var cmd = con.CreateCommand())
 				{
 					Console.WriteLine($"Key: {apiKey}");
-					cmd.CommandText = $"SELECT username FROM apiKeys WHERE apiKey = {apiKey}";
-					string username = (string)cmd.ExecuteScalar();
-
+					cmd.CommandText = $"SELECT username FROM apiKeys WHERE apikey = '{apiKey}'";
+					string username = cmd.ExecuteScalar() as string;
 					if (string.IsNullOrWhiteSpace(username))
 						return null;
 					else
-						return new ClaimsPrincipal(new GenericIdentity(username, "stateless"));//new UserModel(username);
+						return new UserModel(username);
 				}
 			}
 		}
@@ -109,19 +124,11 @@ namespace LuminousVector.Aoba.Server
 				using (var cmd = con.CreateCommand())
 				{
 					cmd.CommandText = $"SELECT password FROM users WHERE username='{user.username}';";
-					using (var reader = cmd.ExecuteReader())
-					{
-						if (!reader.HasRows)
-							return null;
-						reader.Read();
-						string passHash = reader.GetString(0);
-						if (VerifyPassword(user.password, passHash))
-						{
-							return GetApiKey(user.username);
-						}
-						else
-							return null;
-					}
+					string passHash = cmd.ExecuteScalar() as string;
+					if (VerifyPassword(user.password, passHash))
+						return GetApiKey(user.username);
+					else
+						return null;
 				}
 			}
 		}
@@ -134,18 +141,12 @@ namespace LuminousVector.Aoba.Server
 				{
 					try
 					{
-						cmd.CommandText = $"SELECT apiKey FROM apiKeys WHERE username='{username.ToBase60()}'";
-						using (var reader = cmd.ExecuteReader())
-						{
-							if (!reader.HasRows)
-								return RegisterNewApiKey(username);
-							reader.Read();
-							string apiKey = reader.GetString(0);
-							if (string.IsNullOrWhiteSpace(apiKey))
-								return RegisterNewApiKey(username);
-							else
-								return apiKey;
-						}
+						cmd.CommandText = $"SELECT apiKey FROM apiKeys WHERE username='{username}'";
+						string apiKey = cmd.ExecuteScalar() as string;
+						if (string.IsNullOrWhiteSpace(apiKey))
+							return RegisterNewApiKey(username);
+						else
+							return apiKey;
 					}
 					catch
 					{
@@ -186,11 +187,54 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"INSERT INTO apiKeys VALUES('{user.ToBase60()}', '{id}')";
+					cmd.CommandText = $"INSERT INTO apiKeys VALUES('{user}', '{id}')";
 					cmd.ExecuteNonQuery();
 				}
 			}
 			return id;
+		}
+
+		internal static string AddImage(string userName, string fileUri)
+		{
+			using (var con = GetConnection())
+			{
+				using (var cmd = con.CreateCommand())
+				{
+					cmd.CommandText = $"INSERT INTO images VALUES('{userName.ToBase60()}{fileUri.ToBase60()}', '{userName}', '{Uri.EscapeDataString(fileUri)}')";
+					cmd.ExecuteNonQuery();
+					return $"{HOST}/image/{userName.ToBase60()}{fileUri.ToBase60()}";
+				}
+			}
+		}
+
+		internal static string GetImage(string id)
+		{
+			using (var con = GetConnection())
+			{
+				using (var cmd = con.CreateCommand())
+				{
+					cmd.CommandText = $"SELECT fileuri FROM images WHERE id = '{id}'";
+					return $"{SCREEN_DIR}{Uri.UnescapeDataString((string)cmd.ExecuteScalar())}";
+				}
+			}
+		}
+
+		internal static UserStatsModel GetUserStats(string userName)
+		{
+			using (var con = GetConnection())
+			{
+				using (var cmd = con.CreateCommand())
+				{
+					try
+					{
+						cmd.CommandText = $"SELECT COUNT(owner) FROM images WHERE owner = '{userName}'";
+						return new UserStatsModel() { screenShotCount = (int)(long)cmd.ExecuteScalar()};
+					}catch(Exception e)
+					{
+						return new UserStatsModel();
+					}
+				}
+			}
 		}
 	}
 }

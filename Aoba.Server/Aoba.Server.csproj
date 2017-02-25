@@ -193,11 +193,11 @@
     <Compile Include="Aoba.cs" />
     <Compile Include="DataStore\DBInfo.cs" />
     <Compile Include="DataStore\StringExtention.cs" />
-    <Compile Include="Models\ApiKey.cs" />
     <Compile Include="Models\LoginCredentialsModel.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Modules\APIModule.cs" />
     <Compile Include="Modules\AuthModule.cs" />
+    <Compile Include="Modules\ImageModule.cs" />
     <Compile Include="Modules\IndexModule.cs" />
     <Compile Include="NancyBootstrap.cs" />
     <Compile Include="Program.cs" />
@@ -223,6 +223,7 @@
   <ItemGroup>
     <AobaWeb Include="$(ProjectDir)AobaWeb\**\*.*" />
   </ItemGroup>
+  <Import Project="..\DataStore\DataStore.projitems" Label="Shared" />
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(AobaWeb)" DestinationFiles="@(AobaWeb->'$(TargetDir)AobaWeb\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>

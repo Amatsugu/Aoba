@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace LuminousVector.Aoba.DataStore
 {
-	class Token
+	public class UserStatsModel
 	{
-		public string ApiKey { get; set; }
+		public int screenShotCount;
 	}
 }

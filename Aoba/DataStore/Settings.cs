@@ -4,31 +4,66 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing.Imaging;
+using System.Windows.Forms;
 using ProtoBuf;
 using LuminousVector.Serialization;
 using System.IO;
+using LuminousVector.Aoba.Keyboard;
 
 namespace LuminousVector.Aoba.DataStore
 {
 	public enum FullscreenCaptureMode
 	{
-		CursorScreen,
-		AllScreens,
-		PrimaryScreen
+		CursorScreen = 0,
+		AllScreens = 1,
+		PrimaryScreen = 2
 	}
 
 	[ProtoContract]
 	public class Settings
 	{
+
+		public static Settings Default
+		{
+			get
+			{
+				return new Settings()
+				{
+					Username = null,
+					AuthToken = null,
+					RunAtStart = true,
+					PlaySounds = true,
+					SoundSuccess = true,
+					SoundFailed = true,
+					SoundCapure = false,
+					ShowToasts = true,
+					ToastSucess = true,
+					ToastFailed = true,
+					ToastCapture = false,
+					CopyLink = true,
+					OpenLink = false,
+					Format = ImageFormat.Png,
+					SaveCopy = false,
+					SaveLocation = $@"{Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)}\Aoba",
+					FullscreenCapture = FullscreenCaptureMode.CursorScreen,
+					Shortcuts = new List<KeybaordShortcut>()
+					{
+						new KeybaordShortcut("Capture Window", Keys.D2, true, true),
+						new KeybaordShortcut("Capture Fullscreen", Keys.D3, true, true),
+						new KeybaordShortcut("Capture Region", Keys.D4, true, true),
+					},
+				};
+			}
+		}
 		//User
-		[ProtoIgnore]
+		[ProtoMember(18)]
 		public string Username { get; set; }
 		[ProtoIgnore]
 		public string Password { get; set; }
 		[ProtoMember(16)]
 		public string AuthToken { get; set; }
 		[ProtoIgnore]
-		public bool HasAuth { get { return string.IsNullOrWhiteSpace(AuthToken); } }
+		public bool HasAuth { get { return !string.IsNullOrWhiteSpace(AuthToken); } }
 
 		//Startup
 		[ProtoMember(1)]
@@ -66,7 +101,7 @@ namespace LuminousVector.Aoba.DataStore
 
 		//Saving
 		[ProtoMember(13)]
-		public bool SaveCopy { get; set; }
+		public bool SaveCopy { get; set; } = false;
 		[ProtoMember(14)]
 		public string SaveLocation { get; set; }
 
@@ -74,8 +109,14 @@ namespace LuminousVector.Aoba.DataStore
 		[ProtoMember(15)]
 		public FullscreenCaptureMode FullscreenCapture { get; set; }
 
+		//Keys
+		[ProtoMember(17)]
+		public List<KeybaordShortcut> Shortcuts { get; set; }
+
 		public static Settings Load(string file) => DataSerializer.DeserializeData<Settings>(File.ReadAllBytes(file));
 
 		public void Save(string file) => File.WriteAllBytes(file, DataSerializer.SerializeData(this));
+
+
 	}
 }
