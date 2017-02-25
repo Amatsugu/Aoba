@@ -202,7 +202,7 @@ namespace LuminousVector.Aoba.Server
 				{
 					cmd.CommandText = $"INSERT INTO images VALUES('{userName.ToBase60()}{fileUri.ToBase60()}', '{userName}', '{Uri.EscapeDataString(fileUri)}')";
 					cmd.ExecuteNonQuery();
-					return $"{HOST}/image/{userName.ToBase60()}{fileUri.ToBase60()}";
+					return $"{HOST}/i/{userName.ToBase60()}{fileUri.ToBase60()}";
 				}
 			}
 		}

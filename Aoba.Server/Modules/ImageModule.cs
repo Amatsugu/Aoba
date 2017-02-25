@@ -10,7 +10,7 @@ namespace LuminousVector.Aoba.Server.Modules
 {
 	public class ImageModule : NancyModule
 	{
-		public ImageModule() : base("/image")
+		public ImageModule() : base("/i")
 		{
 			Get["/{id}"] = p =>
 			{

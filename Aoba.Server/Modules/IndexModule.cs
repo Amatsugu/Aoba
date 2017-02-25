@@ -16,6 +16,8 @@ namespace LuminousVector.Aoba.Server.Modules
 #if !DEBUG
 			this.RequiresHttps();
 #endif
+			Get["/image/{id}"] = p => Response.AsRedirect($"/i/{(string)p.id}");
+
 			Get["/"] = p =>
 			{
 				Console.WriteLine($"User: {Context.CurrentUser?.UserName}");
