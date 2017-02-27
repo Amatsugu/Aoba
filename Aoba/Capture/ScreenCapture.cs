@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace LuminousVector.Aoba
+namespace LuminousVector.Aoba.Capture
 {
 	public static class ScreenCapture
 	{

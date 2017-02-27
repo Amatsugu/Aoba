@@ -191,6 +191,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aoba.cs" />
+    <Compile Include="Credentials\DBCredentials.cs" />
     <Compile Include="DataStore\DBInfo.cs" />
     <Compile Include="DataStore\StringExtention.cs" />
     <Compile Include="Models\LoginCredentialsModel.cs" />

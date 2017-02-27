@@ -12,7 +12,7 @@
 				<TabItem Header="General">
 					<StackPanel>
 						<GroupBox Header="Startup">
-							<CheckBox x:Name="RunOnStartup" Content="Run at System Startup" Margin="5 0 0 0" IsChecked="True"/>
+							<CheckBox IsEnabled="False" x:Name="RunOnStartup" Content="Run at System Startup (NYI)" Margin="5 0 0 0" IsChecked="True" Click="DataUpdated"/>
 						</GroupBox>
 						<GroupBox Header="After Upload" Padding="5 0 0 0">
 							<StackPanel>
@@ -21,8 +21,8 @@
 										<ColumnDefinition Width="*"/>
 										<ColumnDefinition Width="*"/>
 									</Grid.ColumnDefinitions>
-									<CheckBox x:Name="CopyLink" Content="Copy link to clipbaord" Grid.Column="0" IsChecked="True"/>
-									<CheckBox x:Name="OpenLink" Content="Open link in browser" Grid.Column="1" IsChecked="False"/>
+									<CheckBox x:Name="CopyLink" Content="Copy link to clipbaord" Grid.Column="0" IsChecked="True" Click="DataUpdated"/>
+									<CheckBox x:Name="OpenLink" Content="Open link in browser" Grid.Column="1" IsChecked="False" Click="DataUpdated"/>
 								</Grid>
 							</StackPanel>
 						</GroupBox>
@@ -36,19 +36,19 @@
 									<CheckBox x:Name="ToastAll" Content="Show notification toasts" Click="ToastAll_Click" IsChecked="True"/>
 									<GroupBox x:Name="ToastBox" Header="Toasts" Padding="5 0 0 0">
 										<StackPanel>
-											<CheckBox x:Name="ToastSuccess" Content="Upload Success Notifications" IsChecked="True"/>
-											<CheckBox x:Name="ToastFailed" Content="Upload Failed Notifications" IsChecked="True"/>
-											<CheckBox x:Name="ToastCapture" Content="Capture Notifications"/>
+											<CheckBox x:Name="ToastSuccess" Content="Upload Success Notifications" IsChecked="True" Click="DataUpdated"/>
+											<CheckBox x:Name="ToastFailed" Content="Upload Failed Notifications" IsChecked="True" Click="DataUpdated"/>
+											<CheckBox x:Name="ToastCapture" Content="Capture Notifications" Click="DataUpdated"/>
 										</StackPanel>
 									</GroupBox>
 								</StackPanel>
 								<StackPanel Grid.Column="1">
 									<CheckBox x:Name="SoundAll" Content="Play Sounds" Click="SoundAll_Click" IsChecked="True"/>
-									<GroupBox x:Name="SoundBox" Header="Sounds" Padding="5 0 0 0">
+									<GroupBox x:Name="SoundBox" Header="Sounds" Padding="5 0 0 0" >
 										<StackPanel>
-											<CheckBox x:Name="SoundSuccess" Content="Play Upload Sucess Sound" IsChecked="True"/>
-											<CheckBox x:Name="SoundFailed" Content="Play Upload Failed Sound" IsChecked="True"/>
-											<CheckBox x:Name="SoundCapture" Content="Play Capture Sound"/>
+											<CheckBox x:Name="SoundSuccess" Content="Play Upload Sucess Sound" IsChecked="True" Click="DataUpdated"/>
+											<CheckBox x:Name="SoundFailed" Content="Play Upload Failed Sound" IsChecked="True" Click="DataUpdated"/>
+											<CheckBox x:Name="SoundCapture" Content="Play Capture Sound" Click="DataUpdated"/>
 										</StackPanel>
 									</GroupBox>
 								</StackPanel>
@@ -72,8 +72,8 @@
 										</Grid.RowDefinitions>
 										<Label Content="Username" Padding="5" Grid.Column="0" Grid.Row="0"/>
 										<Label Content="Password" Padding="5" Grid.Column="0" Grid.Row="1"/>
-										<TextBox x:Name="Username" Grid.Column="1" Grid.Row="0" Margin="5"/>
-										<PasswordBox x:Name="Password" Grid.Column="1" Grid.Row="1" Margin="5"/>
+										<TextBox x:Name="Username" Grid.Column="1" Grid.Row="0" Margin="5"  LostFocus="DataUpdated" KeyDown="Username_KeyDown"/>
+										<PasswordBox x:Name="Password" Grid.Column="1" Grid.Row="1" Margin="5" LostFocus="DataUpdated" KeyDown="Password_KeyDown"/>
 									</Grid>
 									<Button Content="Login" x:Name="LoginButton" Click="LoginButton_Click" Margin="0 5 0 0"/>
 								</StackPanel>
@@ -96,7 +96,7 @@
 									<ColumnDefinition Width="2*"/>
 								</Grid.ColumnDefinitions>
 								<Label Content="Format" Grid.Column="0"/>
-								<ComboBox x:Name="ImageFormat" Grid.Column="1">
+								<ComboBox x:Name="ImageFormat" Grid.Column="1" LostFocus="DataUpdated">
 									<ComboBoxItem IsSelected="True" Content="PNG"/>
 									<ComboBoxItem Content="JPEG"/>
 								</ComboBox>
@@ -128,7 +128,7 @@
 						</GroupBox>
 						<GroupBox Header="Fullscreen Capture" Padding="5">
 							<StackPanel>
-								<ComboBox x:Name="FullscreenCaputue">
+								<ComboBox x:Name="FullscreenCaputue" LostFocus="DataUpdated">
 									<ComboBoxItem Content="Capture screen with cursor" IsSelected="True"/>
 									<ComboBoxItem Content="Capture all screens" IsSelected="False"/>
 									<ComboBoxItem Content="Capture primary" IsSelected="False"/>
@@ -142,7 +142,7 @@
 						<StackPanel>
 							<GroupBox Header="In Game" Padding="5">
 								<StackPanel IsEnabled="False">
-									<CheckBox Content="Show FPS (NYI)" IsChecked="False"/>
+									<CheckBox Content="Show FPS (NYI)" IsChecked="False" Click="DataUpdated"/>
 								</StackPanel>
 							</GroupBox>
 						</StackPanel>

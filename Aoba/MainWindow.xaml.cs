@@ -147,6 +147,8 @@ namespace LuminousVector.Aoba
 					e.Cancel = true;
 				HideWindow();
 			}
+			if (!willExit)
+				Aoba.Dispose();
 			base.OnClosing(e);
 		}
 
@@ -193,6 +195,7 @@ namespace LuminousVector.Aoba
 		private void SaveCopy_Click(object sender, RoutedEventArgs e)
 		{
 			SaveBox.IsEnabled = (SaveCopy.IsChecked == null) ? false : (bool)SaveCopy.IsChecked;
+			Save();
 		}
 
 		private void SaveLocationButton_Click(object sender, RoutedEventArgs e)
@@ -202,16 +205,36 @@ namespace LuminousVector.Aoba
 				System.Windows.Forms.DialogResult result = dialog.ShowDialog();
 				SaveLocation.Text = dialog.SelectedPath;
 			}
+			Save();
 		}
 
 		private void SoundAll_Click(object sender, RoutedEventArgs e)
 		{
 			SoundBox.IsEnabled = (SoundAll.IsChecked == null) ? false : (bool)SoundAll.IsChecked;
+			Save();
 		}
 
 		private void ToastAll_Click(object sender, RoutedEventArgs e)
 		{
 			ToastBox.IsEnabled = (ToastAll.IsChecked == null) ? false : (bool)ToastAll.IsChecked;
+			Save();
+		}
+
+		private void DataUpdated(object sender, RoutedEventArgs e)
+		{
+			Save();
+		}
+
+		private void Username_KeyDown(object sender, KeyEventArgs e)
+		{
+			if(e.Key == Key.Enter || e.Key == Key.Return)
+				Password.Focus();
+		}
+
+		private void Password_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter || e.Key == Key.Return)
+				LoginButton_Click(sender, null);
 		}
 	}
 }

@@ -1,23 +1,22 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Flurl;
 using Flurl.Http;
-using LuminousVector.Aoba.Net;
-using LuminousVector.Aoba.DataStore;
-using LuminousVector.Aoba.Keyboard;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
-using RestSharp;
+using System;
+using System.IO;
 using System.Net;
-using Newtonsoft.Json;
-using System.Windows.Media;
-using LuminousVector.Aoba.Models;
+using System.Text;
+using System.Linq;
+using System.Drawing;
+using System.Diagnostics;
 using System.Windows.Forms;
+using System.Windows.Media;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Drawing.Imaging;
+using LuminousVector.Aoba.Net;
+using LuminousVector.Aoba.Models;
+using LuminousVector.Aoba.Capture;
+using LuminousVector.Aoba.Keyboard;
+using LuminousVector.Aoba.DataStore;
 
 namespace LuminousVector.Aoba
 {
@@ -292,6 +291,12 @@ namespace LuminousVector.Aoba
 		{
 			Settings.Save("Settings.data");
 			Debug.WriteLine("Saved");
+		}
+
+		public static void Dispose()
+		{
+			TrayIcon.Dispose();
+			KeyHandler.Dispose();
 		}
 	}
 }

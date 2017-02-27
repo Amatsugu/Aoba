@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace LuminousVector.Aoba.Keyboard
 {
-	public class KeyHandler
+	public class KeyHandler : IDisposable
 	{
 		public event KeyEventHandler KeyDown { add { _globalHook.KeyDown += value; } remove { _globalHook.KeyDown -= value; } }
 		public event KeyEventHandler KeyUp { add { _globalHook.KeyUp += value; } remove { _globalHook.KeyUp -= value; } }
@@ -26,7 +26,7 @@ namespace LuminousVector.Aoba.Keyboard
 
 		public KeyHandler()
 		{
-			_globalHook = Hook.GlobalEvents();
+			_globalHook	= Hook.GlobalEvents();
 			Subscribe();
 			_shortcuts = Aoba.Settings.Shortcuts;
 			_eventTargets = new Dictionary<string, Action>();
@@ -69,6 +69,10 @@ namespace LuminousVector.Aoba.Keyboard
 				}
 			}
 		}
-		
+
+		public void Dispose()
+		{
+			_globalHook.Dispose();
+		}
 	}
 }

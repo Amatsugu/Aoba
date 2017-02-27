@@ -240,4 +240,4 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
-Aoba.Server/Program.cs
+Aoba.Server/Credentials/DBCredentials.cs

@@ -39,6 +39,6 @@ namespace LuminousVector.Aoba.Keyboard
 			_alt = alt;
 		}
 
-		internal bool IsCurrent(KeyEventArgs e) => (e.Alt == _alt && e.Shift == _shift && e.Control == e.Control && e.KeyCode == _key);
+		internal bool IsCurrent(KeyEventArgs e) => (e.Alt == _alt && e.Shift == _shift && e.Control == _ctrl && e.KeyCode == _key);
 	}
 }

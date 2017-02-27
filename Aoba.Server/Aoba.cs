@@ -17,6 +17,7 @@ using System.Security.Cryptography;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using LuminousVector.Aoba.DataStore;
+using LuminousVector.Aoba.Server.Credentials;
 
 namespace LuminousVector.Aoba.Server
 {
@@ -105,7 +106,7 @@ namespace LuminousVector.Aoba.Server
 				using (var cmd = con.CreateCommand())
 				{
 					Console.WriteLine($"Key: {apiKey}");
-					cmd.CommandText = $"SELECT username FROM apiKeys WHERE apikey = '{apiKey}'";
+					cmd.CommandText = $"SELECT username FROM {DBCredentials.DB_ApiTable} WHERE apikey = '{apiKey}'";
 					string username = cmd.ExecuteScalar() as string;
 					if (string.IsNullOrWhiteSpace(username))
 						return null;
@@ -123,7 +124,7 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"SELECT password FROM users WHERE username='{user.username}';";
+					cmd.CommandText = $"SELECT password FROM {DBCredentials.DB_UserTable} WHERE username='{user.username}';";
 					string passHash = cmd.ExecuteScalar() as string;
 					if (VerifyPassword(user.password, passHash))
 						return GetApiKey(user.username);
@@ -141,7 +142,7 @@ namespace LuminousVector.Aoba.Server
 				{
 					try
 					{
-						cmd.CommandText = $"SELECT apiKey FROM apiKeys WHERE username='{username}'";
+						cmd.CommandText = $"SELECT apiKey FROM {DBCredentials.DB_ApiTable} WHERE username='{username}'";
 						string apiKey = cmd.ExecuteScalar() as string;
 						if (string.IsNullOrWhiteSpace(apiKey))
 							return RegisterNewApiKey(username);
@@ -162,7 +163,7 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"INSERT INTO users VALUES('{username}', '{HashPassword(password)}', '{(username).ToBase60()}')";
+					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_UserTable} VALUES('{username}', '{HashPassword(password)}', '{(username).ToBase60()}')";
 					cmd.ExecuteNonQuery();
 				}
 			}
@@ -174,7 +175,7 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"DELETE FROM users WHERE username = '{username}'";
+					cmd.CommandText = $"DELETE FROM {DBCredentials.DB_UserTable} WHERE username = '{username}'";
 					cmd.ExecuteNonQuery();
 				}
 			}
@@ -187,7 +188,7 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"INSERT INTO apiKeys VALUES('{user}', '{id}')";
+					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_ApiTable} VALUES('{user}', '{id}')";
 					cmd.ExecuteNonQuery();
 				}
 			}
@@ -200,7 +201,7 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"INSERT INTO images VALUES('{userName.ToBase60()}{fileUri.ToBase60()}', '{userName}', '{Uri.EscapeDataString(fileUri)}')";
+					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_MediaTable} VALUES('{userName.ToBase60()}{fileUri.ToBase60()}', '{userName}', '{Uri.EscapeDataString(fileUri)}')";
 					cmd.ExecuteNonQuery();
 					return $"{HOST}/i/{userName.ToBase60()}{fileUri.ToBase60()}";
 				}
@@ -213,7 +214,7 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"SELECT fileuri FROM images WHERE id = '{id}'";
+					cmd.CommandText = $"SELECT fileuri FROM {DBCredentials.DB_MediaTable} WHERE id = '{id}'";
 					return $"{SCREEN_DIR}{Uri.UnescapeDataString((string)cmd.ExecuteScalar())}";
 				}
 			}
@@ -227,7 +228,7 @@ namespace LuminousVector.Aoba.Server
 				{
 					try
 					{
-						cmd.CommandText = $"SELECT COUNT(owner) FROM images WHERE owner = '{userName}'";
+						cmd.CommandText = $"SELECT COUNT(owner) FROM {DBCredentials.DB_MediaTable} WHERE owner = '{userName}'";
 						return new UserStatsModel() { screenShotCount = (int)(long)cmd.ExecuteScalar()};
 					}catch(Exception e)
 					{
