@@ -1,0 +1,23 @@
+@inherits Nancy.ViewEngines.Razor.NancyRazorViewBase<dynamic>
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<link rel="stylesheet" href="/res/css/main.css"/>
+		<link rel="stylesheet" href="/res/css/window.css"/>
+		<link rel="icon" href="/res/img/Aoba.ico"/>
+		<link rel="shortcut-icon" href="/res/img/Aoba.ico"/>
+	</head>
+	<title>
+		Aoba | @((int)Model.statusCode)
+	</title>
+	<body>
+		<div id="windowWrapper">
+			<div id="background"></div>
+			<div id="window">
+				<img src="/res/img/Aoba.ico">
+				<h1>@((int)Model.statusCode)</h1>
+				<h3>@Model.message</h3>
+			</div>
+		</div>
+	</body>
+</html>

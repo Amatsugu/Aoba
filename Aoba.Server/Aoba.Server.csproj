@@ -14,6 +14,21 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -44,13 +59,11 @@
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.1.1.0\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Logging, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Logging.1.1.0\lib\netstandard1.1\Microsoft.Extensions.Logging.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Microsoft.Extensions.Logging, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.1.1.1\lib\netstandard1.1\Microsoft.Extensions.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.1.1.0\lib\netstandard1.1\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.1.1.1\lib\netstandard1.1\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
@@ -195,20 +208,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aoba.cs" />
+    <Compile Include="Bootstrap\RazorConfig.cs" />
     <Compile Include="Credentials\Auth.cs" />
     <Compile Include="Credentials\DBCredentials.cs" />
     <Compile Include="DataStore\DBInfo.cs" />
     <Compile Include="DataStore\StringExtention.cs" />
     <Compile Include="Models\LoginCredentialsModel.cs" />
+    <Compile Include="Models\StatusCodeMessages.cs" />
     <Compile Include="Models\UserMapper.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Modules\APIModule.cs" />
     <Compile Include="Modules\AuthModule.cs" />
+    <Compile Include="Bootstrap\StatusCodeHandler.cs" />
     <Compile Include="Modules\ManageModule.cs" />
     <Compile Include="Modules\ImageModule.cs" />
     <Compile Include="Modules\IndexModule.cs" />
     <Compile Include="Modules\RegistrationModule.cs" />
-    <Compile Include="NancyBootstrap.cs" />
+    <Compile Include="Bootstrap\NancyBootstrap.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -218,7 +234,18 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.6.2 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
@@ -232,6 +259,17 @@
   </Target>
   -->
   <ItemGroup>
+    <!--AobaWeb Include="$(ProjectDir)AobaWeb\404.cshtml" />
+    <AobaWeb Include="$(ProjectDir)AobaWeb\index.html" />
+    <AobaWeb Include="$(ProjectDir)AobaWeb\login.cshtml" />
+    <AobaWeb Include="$(ProjectDir)AobaWeb\register.html" />
+    <AobaWeb Include="$(ProjectDir)AobaWeb\res\css\main.css" />
+    <AobaWeb Include="$(ProjectDir)AobaWeb\res\css\vars.css" />
+    <AobaWeb Include="$(ProjectDir)AobaWeb\res\css\window.css" />
+    <AobaWeb Include="$(ProjectDir)AobaWeb\res\img\Aoba.ico" />
+    <AobaWeb Include="$(ProjectDir)AobaWeb\res\img\loginBG.png" />
+    <AobaWeb Include="$(ProjectDir)AobaWeb\res\js\jquery-3.1.1.min.js" />
+    <AobaWeb Include="$(ProjectDir)AobaWeb\res\js\login.js" /-->
     <AobaWeb Include="$(ProjectDir)AobaWeb\**\*.*" />
   </ItemGroup>
   <Import Project="..\DataStore\DataStore.projitems" Label="Shared" />

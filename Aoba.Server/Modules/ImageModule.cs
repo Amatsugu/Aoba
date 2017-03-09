@@ -19,6 +19,11 @@ namespace LuminousVector.Aoba.Server.Modules
 					return new Response { StatusCode = HttpStatusCode.NotFound };
 				return Response.FromStream(File.OpenRead(img), MimeTypes.GetMimeType(img));
 			};
+
+			Get["/"] = _ =>
+			{
+				return new Response { StatusCode = HttpStatusCode.NotFound };
+			};
 		}
 	}
 }

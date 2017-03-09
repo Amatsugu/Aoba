@@ -207,7 +207,7 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("+", "-").Replace("/", "_").Replace("=", "~").Replace(@"\", "."); 
+					string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("+", "-").Replace("/", "~").Replace("=", "").Replace(@"\", "."); 
 					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_MediaTable} VALUES('{id}', '{userName}', '{Uri.EscapeDataString(fileUri)}')";
 					cmd.ExecuteNonQuery();
 					return $"{HOST}/i/{id}";
@@ -222,7 +222,13 @@ namespace LuminousVector.Aoba.Server
 				using (var cmd = con.CreateCommand())
 				{
 					cmd.CommandText = $"SELECT fileuri FROM {DBCredentials.DB_MediaTable} WHERE id = '{id}'";
-					return $"{SCREEN_DIR}{Uri.UnescapeDataString((string)cmd.ExecuteScalar())}";
+					try
+					{
+						return $"{SCREEN_DIR}{Uri.UnescapeDataString((string)cmd.ExecuteScalar())}";
+					}catch
+					{
+						return null;
+					}
 				}
 			}
 		}

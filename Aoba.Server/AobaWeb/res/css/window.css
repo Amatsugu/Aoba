@@ -51,6 +51,12 @@
 	display: block;
 }
 
+#window h3
+{
+	color: var(--main-color-2);
+	font-weight: 300;
+}
+
 #window input
 {
 	margin: 10px;
