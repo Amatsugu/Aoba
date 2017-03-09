@@ -1,3 +1,4 @@
+![Aoba](https://raw.githubusercontent.com/TheDarkVoid/Aoba/master/Aoba/res/Aoba.ico "Aoba")
 # Aoba
 A screen capture/upload client like puush but with game capture support.
 
