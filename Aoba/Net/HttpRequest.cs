@@ -1,3 +1,4 @@
+using Flurl;
 using System;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
@@ -9,10 +10,9 @@ using System.Threading.Tasks;
 
 namespace LuminousVector.Aoba.Net
 {
-	class AobaHttpRequest
+	public static class AobaHttpRequest
 	{
-
-		public static string Upload(string fileUri, string targetUrl, CookieContainer cookies = null, string method = "POST")
+		public static string Upload(this Url targetUrl, string fileUri, CookieContainer cookies = null, string method = "POST")
 		{
 			string sWebAddress = targetUrl;
 			string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
@@ -24,7 +24,6 @@ namespace LuminousVector.Aoba.Net
 			wr.Credentials = CredentialCache.DefaultCredentials;
 			wr.CookieContainer = cookies;
 			Stream stream = wr.GetRequestStream();
-			//string formdataTemplate = "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}";
 
 			stream.Write(boundarybytes, 0, boundarybytes.Length);
 			byte[] formitembytes = Encoding.UTF8.GetBytes(fileUri);

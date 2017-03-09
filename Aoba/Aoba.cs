@@ -25,25 +25,38 @@ namespace LuminousVector.Aoba
 		public static Settings Settings { get { return _settings; } }
 		public static KeyHandler KeyHandler;
 		public static UserStatsModel UserStats;
-		public static System.Windows.Forms.NotifyIcon TrayIcon { get; set; }
+		public static NotifyIcon TrayIcon { get; set; }
+		public static bool IsListening { get; set; } = true;
 
 
-		private static string _apiUri = "https://aoba.luminousvector.com/api";
-		private static string _authUri = "https://aoba.luminousvector.com/auth";
+		private static string _apiUri = "https://aobacapture.com/api";
+		private static string _authUri = "https://aobacapture.com/auth";
 		private static Settings _settings;
 		private static CookieContainer _cookies;
 		private static MediaPlayer _successSound;
 		private static MediaPlayer _failedSound;
 		private static string _clickUri = null;
-		private static bool _capturingRect = false;
+		private static bool _capturingRect
+		{
+			get
+			{
+				return (_clickCount >= 0);
+			}
+			set
+			{
+				if (value)
+					_clickCount = 0;
+				else
+					_clickCount = -1;
+			}
+		}
 		private static Rectangle _captureRegion;
+		private static ContextMenuInstaller _inst;
+		private static System.Collections.IDictionary _stateSaver;
+		private static int _clickCount = -1;
 
 		internal static void Init()
 		{
-#if DEBUG
-			_apiUri = "http://localhost:4321/api";
-			_authUri = "http://localhost:4321/auth";
-#endif
 			//Settings
 			try
 			{
@@ -60,8 +73,7 @@ namespace LuminousVector.Aoba
 			}
 			if (Settings.HasAuth)
 			{
-				_cookies = new CookieContainer();
-				_cookies.Add(new Uri(_apiUri), new Cookie("ApiKey", Settings.AuthToken));
+				CreateCookie();
 			}
 
 			//Sounds
@@ -91,67 +103,84 @@ namespace LuminousVector.Aoba
 			KeyHandler.RegisterEventTarget("Capture Window", null);
 			KeyHandler.RegisterEventTarget("Capture Fullscreen", CaptureFullscreenAndSave);
 			KeyHandler.RegisterEventTarget("Capture Region", BeginCapture);
+			KeyHandler.RegisterEventTarget("Upload File", null);
+
+			//Region Capture
+			RegisterRegionCapture();	
+		}
+
+		private static void RegisterRegionCapture()
+		{
 			KeyHandler.KeyDown += (_, e) =>
 			{
-				if(e.KeyCode == Keys.Escape && _capturingRect)
+				if (!IsListening)
+					return;
+				if (e.KeyCode == Keys.Escape && _capturingRect)
 				{
 					e.Handled = true;
 					_capturingRect = false;
 					_captureRegion = default(Rectangle);
 					Cursor.Current = Cursors.Default;
+					Debug.WriteLine("Capture Stopped");
 				}
 			};
 			KeyHandler.MouseDown += (_, e) =>
 			{
-				if (_capturingRect && e.Button != MouseButtons.Left)
-				{ 
-					_capturingRect = false;
-					_captureRegion = default(Rectangle);
-					//Cursor.Current = Cursors.Default;
-				}
-			};
-			KeyHandler.DragStart += (_, e) => 
-			{
-				Debug.WriteLine($"Start {e.Button}");
-				if (_capturingRect)
-				{
-					e.Handled = true;
-					_captureRegion = new Rectangle(Cursor.Position, Size.Empty);
-				}
-			};
-			KeyHandler.DragEnd += (_, e) =>
-			{
-				Debug.WriteLine($"Finish {e.Button}");
+				if (!IsListening)
+					return;
 				if (e.Button == MouseButtons.Left && _capturingRect)
 				{
-					Point cPos = Cursor.Position;
+					Debug.WriteLine($"Point {_clickCount + 1}");
 					e.Handled = true;
-					var size = new Size();
-					size.Width = Math.Abs(Cursor.Position.X - _captureRegion.X);
-					size.Height = Math.Abs(Cursor.Position.Y - _captureRegion.Y);
-					if (_captureRegion.X > cPos.X)
-						_captureRegion.X = cPos.X;
-					if (_captureRegion.Y > cPos.Y)
-						_captureRegion.Y = cPos.Y;
-					_captureRegion.Size = size;
-					CaptureRegion(_captureRegion);
-					_capturingRect = false;
-					_captureRegion = default(Rectangle);
-					Cursor.Current = Cursors.Default;
+					if (_clickCount == 0)
+					{
+						_captureRegion = new Rectangle(Cursor.Position, Size.Empty);
+						_clickCount++;
+					}
+					else if (_clickCount == 1)
+					{
+						Point cPos = Cursor.Position;
+						e.Handled = true;
+						var size = new Size();
+						size.Width = Math.Abs(Cursor.Position.X - _captureRegion.X);
+						size.Height = Math.Abs(Cursor.Position.Y - _captureRegion.Y);
+						if (_captureRegion.X > cPos.X)
+							_captureRegion.X = cPos.X;
+						if (_captureRegion.Y > cPos.Y)
+							_captureRegion.Y = cPos.Y;
+						_captureRegion.Size = size;
+						CaptureRegion(_captureRegion);
+						_capturingRect = false;
+						_captureRegion = default(Rectangle);
+						Cursor.Current = Cursors.Default;
+					}
 				}
 			};
+		}
+
+		internal static void CreateCookie()
+		{
+			_cookies = new CookieContainer();
+			_cookies.Add(new Uri(_apiUri), new Cookie("ApiKey", Settings.AuthToken));
+		}
+
+		internal static void InstallContextMenu()
+		{
+			_inst = new ContextMenuInstaller();
+			_stateSaver = new Dictionary<object, object>();
+			_inst.Install(_stateSaver);
 		}
 
 		internal async static Task Login()
 		{
 			var token = await _authUri.AppendPathSegment("login").PostJsonAsync(new { username = Settings.Username, password = Settings.Password, authMode = "API"}).ReceiveJson<AuthToken>();
 			Settings.AuthToken = token.ApiKey;
-			var r = await _apiUri.WithCookie("ApiKey", Settings.AuthToken).GetAsync();
+			CreateCookie();
 		}
 
 		internal static string Upload(string fileUri)
 		{
-			return AobaHttpRequest.Upload(fileUri, $"{_apiUri}/image", _cookies);
+			return _apiUri.AppendPathSegment("image").Upload(fileUri, _cookies);
 		}
 
 		private static void BeginCapture()
@@ -161,9 +190,7 @@ namespace LuminousVector.Aoba
 				Debug.WriteLine("Capture Start");
 				if(Settings.ShowToasts && Settings.ToastCapture)
 				{
-					TrayIcon.BalloonTipTitle = "Ready to Capture";
-					TrayIcon.BalloonTipText = "Click and drag a region";
-					TrayIcon.ShowBalloonTip(3);
+					Notify("Click two points to define region", "Ready to Capture");
 				}
 				_capturingRect = true;
 				Cursor.Current = Cursors.Cross;
@@ -182,9 +209,7 @@ namespace LuminousVector.Aoba
 			Image screenCap = ScreenCapture.CaptureRegion(region);
 			if (Settings.ShowToasts && Settings.ToastCapture)
 			{
-				TrayIcon.BalloonTipTitle = "Screenshot Captured";
-				TrayIcon.BalloonTipText = "";
-				TrayIcon.ShowBalloonTip(3);
+				Notify("Screenshot Captured");
 			}
 			PublishScreen(screenCap);
 		}
@@ -208,9 +233,7 @@ namespace LuminousVector.Aoba
 				return;
 			if(Settings.ShowToasts && Settings.ToastCapture)
 			{
-				TrayIcon.BalloonTipTitle = "Screenshot Captured";
-				TrayIcon.BalloonTipText = "";
-				TrayIcon.ShowBalloonTip(3);
+				Notify("Screenshot Captured");
 			}
 			PublishScreen(screenCap);
 		}
@@ -223,6 +246,11 @@ namespace LuminousVector.Aoba
 			if (Settings.SaveCopy)
 				fileName = Settings.SaveLocation.AppendPathSegment(fileName);
 			screenCap.Save(fileName, Settings.Format);
+			if(!Settings.HasAuth)
+			{
+				Notify("User not logged in", "Upload Failed");
+				return;
+			}
 			try
 			{
 				string uri = Upload(fileName);
@@ -238,10 +266,7 @@ namespace LuminousVector.Aoba
 				}
 				if (Settings.ShowToasts && Settings.ToastSucess)
 				{
-					TrayIcon.BalloonTipTitle = "Upload Successful";
-					TrayIcon.BalloonTipText = _clickUri = uri;
-					TrayIcon.ShowBalloonTip(3);
-
+					Notify(_clickUri = uri, "Upload Sucessful");
 				}
 				Debug.WriteLine(uri);
 			}
@@ -254,9 +279,7 @@ namespace LuminousVector.Aoba
 				}
 				if (Settings.ShowToasts && Settings.ToastFailed)
 				{
-					TrayIcon.BalloonTipTitle = "Upload Failed";
-					TrayIcon.BalloonTipText = $"Error: {e.Message}";
-					TrayIcon.ShowBalloonTip(3);
+					Notify($"Error: {e.Message}", "Upload Failed");
 				}
 				Debug.WriteLine(e.Message);
 			}
@@ -281,10 +304,15 @@ namespace LuminousVector.Aoba
 
 			}catch(Exception e)
 			{
-				TrayIcon.BalloonTipTitle = "Failed to Connect";
-				TrayIcon.BalloonTipText = $"Error: {e.Message}";
-				TrayIcon.ShowBalloonTip(3);
+				Notify($"Error: {e.Message}", "Connection Failed");
 			}
+		}
+
+		internal static void Notify(string message, string title = "Aoba", int timeout = 3)
+		{
+			TrayIcon.BalloonTipTitle = title;
+			TrayIcon.BalloonTipText = message;
+			TrayIcon.ShowBalloonTip(timeout);
 		}
 
 		internal static void Save()
@@ -297,6 +325,7 @@ namespace LuminousVector.Aoba
 		{
 			TrayIcon.Dispose();
 			KeyHandler.Dispose();
+			//_inst?.Uninstall(_stateSaver);
 		}
 	}
 }

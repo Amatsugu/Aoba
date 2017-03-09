@@ -54,6 +54,7 @@
 								</StackPanel>
 							</Grid>
 						</GroupBox>
+						<!--Button Content="Register" Click="Button_Click"/-->
 					</StackPanel>
 				</TabItem>
 				<TabItem x:Name="User" Header="User">

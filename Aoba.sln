@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aoba.Server", "Aoba.Server\
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "DataStore", "DataStore\DataStore.shproj", "{A5CA15C1-FBF9-47E9-B71D-4B390EC4F8DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AobaContextMenu", "AobaContextMenu\AobaContextMenu.csproj", "{C8FB60CC-154D-4454-8F6C-DC7B868F9AAA}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		DataStore\DataStore.projitems*{9003211b-6f4f-46ed-9151-5c9f326a0c06}*SharedItemsImports = 4
@@ -28,6 +30,10 @@ Global
 		{9003211B-6F4F-46ED-9151-5C9F326A0C06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9003211B-6F4F-46ED-9151-5C9F326A0C06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9003211B-6F4F-46ED-9151-5C9F326A0C06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8FB60CC-154D-4454-8F6C-DC7B868F9AAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8FB60CC-154D-4454-8F6C-DC7B868F9AAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8FB60CC-154D-4454-8F6C-DC7B868F9AAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8FB60CC-154D-4454-8F6C-DC7B868F9AAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

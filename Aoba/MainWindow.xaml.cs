@@ -25,14 +25,14 @@ namespace LuminousVector.Aoba
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Window
+	public partial class MainWindow : Window, IDisposable
 	{
 #if !DEBUG
 		private bool willExit = false;
 #else
 		private bool willExit = true;
 #endif
-
+		private System.Windows.Forms.ContextMenu _contextMenu;
 
 		public MainWindow()
 		{
@@ -41,9 +41,19 @@ namespace LuminousVector.Aoba
 			//Set Values
 			Load();
 			//Tray Icon
-			var cm = new System.Windows.Forms.ContextMenu(new System.Windows.Forms.MenuItem[]
+
+			var pauseItem = new System.Windows.Forms.MenuItem("Pause");
+			pauseItem.Click += (_, e) =>
 			{
-				new System.Windows.Forms.MenuItem("Restore", RestoreWindow),
+				Aoba.IsListening = !Aoba.IsListening;
+				pauseItem.Text = (Aoba.IsListening) ? "Pause" : "Unpause";
+				Aoba.Notify($"Key Listening {pauseItem.Text}ed");
+			};
+
+			_contextMenu = new System.Windows.Forms.ContextMenu(new System.Windows.Forms.MenuItem[]
+			{
+				new System.Windows.Forms.MenuItem("Settings", RestoreWindow),
+				pauseItem,
 				new System.Windows.Forms.MenuItem("Quit", (o, e) =>
 				{
 					Aoba.TrayIcon.Visible = false;
@@ -52,7 +62,7 @@ namespace LuminousVector.Aoba
 					Close();
 				})
 			});
-			Aoba.TrayIcon.ContextMenu = cm;
+			Aoba.TrayIcon.ContextMenu = _contextMenu;
 			Aoba.TrayIcon.DoubleClick += RestoreWindow;
 		}
 
@@ -147,7 +157,7 @@ namespace LuminousVector.Aoba
 					e.Cancel = true;
 				HideWindow();
 			}
-			if (!willExit)
+			if (willExit)
 				Aoba.Dispose();
 			base.OnClosing(e);
 		}
@@ -236,5 +246,40 @@ namespace LuminousVector.Aoba
 			if (e.Key == Key.Enter || e.Key == Key.Return)
 				LoginButton_Click(sender, null);
 		}
+
+		private void Button_Click(object sender, RoutedEventArgs e)
+		{
+			try
+			{
+				Aoba.InstallContextMenu();
+			}catch(Exception ex)
+			{
+				Debug.WriteLine(ex.Message);
+			}
+		}
+
+		#region IDisposable Support
+		private bool disposedValue = false; // To detect redundant calls
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					_contextMenu.Dispose();
+				}
+
+				disposedValue = true;
+			}
+		}
+
+
+		// This code added to correctly implement the disposable pattern.
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+		#endregion
 	}
 }

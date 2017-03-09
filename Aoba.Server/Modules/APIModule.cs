@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Nancy;
 using Nancy.Security;
-using LuminousVector.Aoba.Server.DataStore;
-using LuminousVector.Aoba.Server.Models;
-using Nancy.ModelBinding;
 using Nancy.Authentication.Stateless;
-using System.IO;
+using LuminousVector.Aoba.Server.DataStore;
 
 namespace LuminousVector.Aoba.Server.Modules
 {
@@ -19,7 +14,7 @@ namespace LuminousVector.Aoba.Server.Modules
 		{
 			StatelessAuthentication.Enable(this, Aoba.StatelessConfig);
 			this.RequiresAuthentication();
-
+			
 			Get["/userStats"] = _ =>
 			{
 				return Response.AsJson(Aoba.GetUserStats(Context.CurrentUser.UserName));
@@ -50,7 +45,7 @@ namespace LuminousVector.Aoba.Server.Modules
 				catch(Exception e)
 				{
 					Console.WriteLine($"Upload Failed: {e.Message}");
-					return new Response() { StatusCode = HttpStatusCode.InternalServerError};
+					return new Response() { StatusCode = HttpStatusCode.ImATeapot};
 				}
 			};
 		}

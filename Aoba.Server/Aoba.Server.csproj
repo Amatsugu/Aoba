@@ -60,6 +60,10 @@
       <HintPath>..\packages\Nancy.1.4.3\lib\net40\Nancy.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Nancy.Authentication.Forms, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nancy.Authentication.Forms.1.4.1\lib\net40\Nancy.Authentication.Forms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Nancy.Authentication.Stateless, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nancy.Authentication.Stateless.1.4.1\lib\net40\Nancy.Authentication.Stateless.dll</HintPath>
       <Private>True</Private>
@@ -191,21 +195,27 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aoba.cs" />
+    <Compile Include="Credentials\Auth.cs" />
     <Compile Include="Credentials\DBCredentials.cs" />
     <Compile Include="DataStore\DBInfo.cs" />
     <Compile Include="DataStore\StringExtention.cs" />
     <Compile Include="Models\LoginCredentialsModel.cs" />
+    <Compile Include="Models\UserMapper.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Modules\APIModule.cs" />
     <Compile Include="Modules\AuthModule.cs" />
+    <Compile Include="Modules\ManageModule.cs" />
     <Compile Include="Modules\ImageModule.cs" />
     <Compile Include="Modules\IndexModule.cs" />
+    <Compile Include="Modules\RegistrationModule.cs" />
     <Compile Include="NancyBootstrap.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

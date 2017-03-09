@@ -1,21 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Nancy;
 using Nancy.Security;
-using Nancy.Responses;
 
 namespace LuminousVector.Aoba.Server.Modules
 {
 	public class IndexModule : NancyModule
 	{
-		public IndexModule()
+		public IndexModule() : base("/")
 		{
-#if !DEBUG
-			this.RequiresHttps();
-#endif
 			Get["/image/{id}"] = p => Response.AsRedirect($"/i/{(string)p.id}");
 
 			Get["/"] = p =>

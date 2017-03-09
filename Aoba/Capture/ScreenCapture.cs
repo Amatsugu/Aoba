@@ -19,22 +19,10 @@ namespace LuminousVector.Aoba.Capture
 
 		public static Bitmap CaptureRegion(Rectangle region)
 		{
-			Screen[] screens = Screen.AllScreens;
 			Bitmap screenCap = new Bitmap(region.Width, region.Height);
 			using (Graphics g = Graphics.FromImage(screenCap))
 			{
-
-				Point destP = new Point();
-				for (int i = 0; i < screens.Length; i++)
-				{
-					Rectangle curRect = region;
-					curRect.Intersect(screens[i].Bounds);
-					if (curRect.IsEmpty)
-						continue;
-					destP.X = curRect.X - region.X;
-					destP.Y = curRect.Y - region.Y;
-					g.CopyFromScreen(curRect.Location, destP, curRect.Size, CopyPixelOperation.SourceCopy);
-				}
+				g.CopyFromScreen(region.Location, Point.Empty, region.Size, CopyPixelOperation.SourceCopy);
 			}
 			return screenCap;
 		}
@@ -51,10 +39,7 @@ namespace LuminousVector.Aoba.Capture
 
 		private static Bitmap CaptureMultiScreen(Screen[] screens)
 		{
-			Screen primary = screens.First(x => x.Primary);
-			Bitmap[] screenCaps = new Bitmap[screens.Length];
-			Rectangle compositeRect = primary.Bounds;
-			int i = 0;
+			Rectangle compositeRect = screens.First(x => x.Primary).Bounds;
 			foreach (Screen s in screens)
 			{
 				if (compositeRect.X > s.Bounds.X)
@@ -65,10 +50,8 @@ namespace LuminousVector.Aoba.Capture
 					compositeRect.Width = s.Bounds.X + s.Bounds.Width;
 				if (compositeRect.Height < s.Bounds.Y + s.Bounds.Height)
 					compositeRect.Height = s.Bounds.Y + s.Bounds.Height;
-				screenCaps[i++] = CaptureScreen(s);
 			}
-			Size compositeSize = new Size(Math.Abs(compositeRect.X) + compositeRect.Width, Math.Abs(compositeRect.Y) + compositeRect.Height);
-			Bitmap composite = new Bitmap(compositeSize.Width, compositeSize.Height);
+			Bitmap composite = new Bitmap(Math.Abs(compositeRect.X) + compositeRect.Width, Math.Abs(compositeRect.Y) + compositeRect.Height);
 			using (Graphics g = Graphics.FromImage(composite))
 			{
 				Point p = new Point();
@@ -76,12 +59,10 @@ namespace LuminousVector.Aoba.Capture
 				{
 					p.X = (Math.Abs(compositeRect.X) + screens[s].Bounds.X);
 					p.Y = (Math.Abs(compositeRect.Y) + screens[s].Bounds.Y);
-					g.DrawImage(screenCaps[s], p);
+					g.CopyFromScreen(screens[s].Bounds.Location, p, screens[s].Bounds.Size, CopyPixelOperation.SourceCopy);
 				}
 			}
-
 			return composite;
-			//Bitmap screenCap = new Bitmap();
 		}
 	}
 }

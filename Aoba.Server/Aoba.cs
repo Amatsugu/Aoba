@@ -1,21 +1,12 @@
 using System;
-using System.IO;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Npgsql;
+using System.Security.Cryptography;
 using Nancy.Authentication.Stateless;
+using Npgsql;
+using Nancy.Cryptography;
+using Nancy.Authentication.Forms;
 using LuminousVector.Aoba.Server.Models;
 using LuminousVector.Aoba.Server.DataStore;
-using System.Security.Principal;
-using System.Security.Claims;
-using Nancy.Security;
-using Nancy;
-using Nancy.Extensions;
-using System.Security.Cryptography;
-using Newtonsoft.Json;
-using System.Text.RegularExpressions;
 using LuminousVector.Aoba.DataStore;
 using LuminousVector.Aoba.Server.Credentials;
 
@@ -23,30 +14,38 @@ namespace LuminousVector.Aoba.Server
 {
 	public static class Aoba
 	{
-		public const string HOST = "aoba.luminousvector.com";
-
-		
+		public const string HOST = "aobacapture.com";
 #if !DEBUG
 		public const string BASE_DIR = "/Storage/Aoba";
 #else
 		public const string BASE_DIR = "K:/Aoba";
 #endif
 		public static string SCREEN_DIR { get { return $"{BASE_DIR}/Screenshots"; } }
-		internal static StatelessAuthenticationConfiguration StatelessConfig = new StatelessAuthenticationConfiguration(nancyContext =>
-		{
-			string ApiKey = nancyContext.Request.Cookies.First(c => c.Key == "ApiKey").Value;
-			Console.WriteLine($"API KEY: {ApiKey}");
-			return GetUserFromApiKey(ApiKey);
-		});
-		private static string CONNECTION_STRING { get { return $"Host={HOST};Username={_dbUser};Password={_dbPass};Database={_dbName};Pooling=true"; } }
-		private static string _dbUser, _dbPass, _dbName;
 
-		public static void Init(string dbUser, string dbPass, string dbName)
+		internal static StatelessAuthenticationConfiguration StatelessConfig { get; private set; } = new StatelessAuthenticationConfiguration(nancyContext =>
 		{
-			_dbUser = dbUser;
-			_dbPass = dbPass;
-			_dbName = dbName;
-		}
+			try
+			{
+				string ApiKey = nancyContext.Request.Cookies.First(c => c.Key == "ApiKey").Value;
+				Console.WriteLine($"API KEY: {ApiKey}");
+				return GetUserFromApiKey(ApiKey);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				return null;
+			}
+		});
+		internal static FormsAuthenticationConfiguration FormsConfig { get; private set; } = new FormsAuthenticationConfiguration()
+		{
+			CryptographyConfiguration = new CryptographyConfiguration(
+			new RijndaelEncryptionProvider(new PassphraseKeyGenerator(Auth.RjPass, Auth.RjSalt)),
+			new DefaultHmacProvider(new PassphraseKeyGenerator(Auth.HmacPass, Auth.HmacSalt))),
+			UserMapper = new UserMapper()
+
+		};
+
+		private static string CONNECTION_STRING { get { return $"Host={HOST};Username={DBCredentials.DB_User};Password={DBCredentials.DB_Pass};Database={DBCredentials.DB_Name};Pooling=true"; } }
 
 
 		private static string HashPassword(string password)
@@ -124,12 +123,19 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"SELECT password FROM {DBCredentials.DB_UserTable} WHERE username='{user.username}';";
-					string passHash = cmd.ExecuteScalar() as string;
-					if (VerifyPassword(user.password, passHash))
-						return GetApiKey(user.username);
-					else
+					try
+					{
+						cmd.CommandText = $"SELECT password FROM {DBCredentials.DB_UserTable} WHERE username='{user.username}';";
+						string passHash = cmd.ExecuteScalar() as string;
+						if (VerifyPassword(user.password, passHash))
+							return GetApiKey(user.username);
+						else
+							return null;
+					}catch(Exception e)
+					{
+						Console.WriteLine(e.Message);
 						return null;
+					}
 				}
 			}
 		}
@@ -201,9 +207,10 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_MediaTable} VALUES('{userName.ToBase60()}{fileUri.ToBase60()}', '{userName}', '{Uri.EscapeDataString(fileUri)}')";
+					string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("+", "-").Replace("/", "_").Replace("=", "~").Replace(@"\", "."); 
+					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_MediaTable} VALUES('{id}', '{userName}', '{Uri.EscapeDataString(fileUri)}')";
 					cmd.ExecuteNonQuery();
-					return $"{HOST}/i/{userName.ToBase60()}{fileUri.ToBase60()}";
+					return $"{HOST}/i/{id}";
 				}
 			}
 		}
@@ -230,12 +237,17 @@ namespace LuminousVector.Aoba.Server
 					{
 						cmd.CommandText = $"SELECT COUNT(owner) FROM {DBCredentials.DB_MediaTable} WHERE owner = '{userName}'";
 						return new UserStatsModel() { screenShotCount = (int)(long)cmd.ExecuteScalar()};
-					}catch(Exception e)
+					}catch
 					{
 						return new UserStatsModel();
 					}
 				}
 			}
+		}
+
+		internal static bool ValidateRegistrationToken(string token)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

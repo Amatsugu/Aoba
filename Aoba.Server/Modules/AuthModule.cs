@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Nancy;
+using Nancy.Authentication.Forms;
 using Nancy.ModelBinding;
 using LuminousVector.Aoba.Server.Models;
 
@@ -17,16 +14,15 @@ namespace LuminousVector.Aoba.Server.Modules
 			{
 				LoginCredentialsModel user = this.Bind<LoginCredentialsModel>();
 				string apiKey = Aoba.ValidateUser(user);
-				if (user.authMode == "API")
+				if (user.authMode == AuthMode.API)
 					return string.IsNullOrEmpty(apiKey) ? new Response { StatusCode = HttpStatusCode.Unauthorized } : Response.AsJson(new { ApiKey = apiKey });
 				else
-					return new Response { StatusCode = HttpStatusCode.NoResponse }; //string.IsNullOrEmpty(apiKey) ? new Response { StatusCode = HttpStatusCode.Unauthorized } : new Response { StatusCode = HttpStatusCode.Accepted };
+					return this.LoginWithoutRedirect(new Guid(apiKey));
 			};
 
 			Get["/logout"] = _ =>
 			{
-
-				return null;
+				return this.LogoutWithoutRedirect();
 			};
 
 

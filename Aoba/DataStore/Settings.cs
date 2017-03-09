@@ -51,6 +51,7 @@ namespace LuminousVector.Aoba.DataStore
 						new KeybaordShortcut("Capture Window", Keys.D2, true, true),
 						new KeybaordShortcut("Capture Fullscreen", Keys.D3, true, true),
 						new KeybaordShortcut("Capture Region", Keys.D4, true, true),
+						new KeybaordShortcut("Upload File", Keys.U, true, true),
 					},
 				};
 			}

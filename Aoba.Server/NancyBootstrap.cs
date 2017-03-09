@@ -1,18 +1,28 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using Nancy;
-using Nancy.Bootstrapper;
 using Nancy.TinyIoc;
 using Nancy.Conventions;
+using Nancy.Bootstrapper;
 using Nancy.Authentication.Stateless;
 
 namespace LuminousVector.Aoba.Server
 {
 	public class NancyBootstrap : DefaultNancyBootstrapper
 	{
+
+		private byte[] favicon;
+
+		protected override byte[] FavIcon
+		{
+			get { return favicon ?? (favicon = LoadFavIcon()); }
+		}
+
+		private byte[] LoadFavIcon()
+		{
+			return File.ReadAllBytes(@"AobaWeb/res/img/Aoba.ico");
+		}
+
 		protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
 		{
 			Conventions.ViewLocationConventions.Add((viewName, model, context) =>

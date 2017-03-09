@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace LuminousVector.Aoba.Keyboard
 {
-	public class KeyHandler : IDisposable
+	public sealed class KeyHandler : IDisposable
 	{
 		public event KeyEventHandler KeyDown { add { _globalHook.KeyDown += value; } remove { _globalHook.KeyDown -= value; } }
 		public event KeyEventHandler KeyUp { add { _globalHook.KeyUp += value; } remove { _globalHook.KeyUp -= value; } }
@@ -70,9 +70,29 @@ namespace LuminousVector.Aoba.Keyboard
 			}
 		}
 
+		#region IDisposable Support
+		private bool disposedValue = false; // To detect redundant calls
+
+		void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					UnSubscribe();
+					_globalHook.Dispose();
+				}
+
+
+				disposedValue = true;
+			}
+		}
+
+		// This code added to correctly implement the disposable pattern.
 		public void Dispose()
 		{
-			_globalHook.Dispose();
+			Dispose(true);
 		}
+		#endregion
 	}
 }

@@ -15,7 +15,7 @@
 
 #windowWrapper #background
 {
-	background: url(/res/img/loginBG.png);
+	background: url("../img/loginBG.png");
 	background-position: right;
 	position: relative;
 	top: 0px;
@@ -34,30 +34,31 @@
 	align-items: center;
 	flex-flow: column;
 	z-index: 1;
-	height: 300px;
+	/*height: 400px;*/
+	padding:  50px 0px 50px 0px;
 	width: 500px;
-	background: rgba(241,234,249, .6);
-	/*border: 2px solid var(--main-bg-color);*/
+	background: rgba(88, 63, 114, .6);
 	text-align: center;
-	box-shadow: 5px 5px 15px rgba(0,0,0,.3);
+	box-shadow: 0px 0px 20px rgba(88, 63, 114,.5);
 	border-radius: 10px;
 }
 
 #window h1
 {
 	font-weight: 300;
-	color: var(--main-color);
+	margin: 0 0 10px 0px;
+	color: var(--main-color-2);
 	display: block;
 }
 
 #window input
 {
 	margin: 10px;
-	padding: 5px;
-	color: var(--main-color);
+	padding: 5px 10px 5px 10px;
+	transition: border .25s, background-color .25s, color .25s;
 	border: 1px solid var(--main-color-2);
-	transition: border .5s;
-	background-color: var(--main-bg-color);
+	background-color: rgba(241, 234, 249, .8);
+	color:var(--main-color);
 	outline: none;
 	font-size: 18px;
 	width: 200px;
@@ -67,13 +68,22 @@
 #window input[type="submit" i]
 {
 	width: auto;
+	margin: 15px 0 0 0;
 	background-color: var(--main-bg-color);
 	color: var(--main-color);
 	border: 1px solid var(--main-color-2);
 }
 
+#window input[type="submit" i]:hover
+{
+	border: 1px solid var(--main-color-2);
+	background-color: var(--main-color);
+	color:var(--main-color-2);
+}
+
 #window input:hover
 {
 	border: 1px solid var(--main-color);
+	background-color: rgba(241, 234, 249, 1);
 }
 
