@@ -3,14 +3,17 @@
 A screen capture/upload client like puush but with game capture support.
 
 <h3>Currently Implemented</h3>
-- Single Screen Capture
-- All Screen Capture
-- Screen Region Capture
-
+<ul>
+<li>Single Screen Capture</li>
+<li>All Screen Capture</li>
+<li>Screen Region Capture</li>
+</ul>
 <h3>To Do</h3>
-- Game Capture (D3D & OpenGL Hooks)
-- Window Capture
-- FPS Counter Overlay
-- Polish
-- Web Interface
-- File Uploads
+<ul>
+<li>Game Capture (D3D & OpenGL Hooks)</li>
+<li>Window Capture</li>
+<li>FPS Counter Overlay</li>
+<li>Polish</li>
+<li>Web Interface</li>
+<li>File Uploads</li>
+</ul>
