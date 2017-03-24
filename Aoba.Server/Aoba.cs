@@ -9,6 +9,7 @@ using LuminousVector.Aoba.Server.Models;
 using LuminousVector.Aoba.Server.DataStore;
 using LuminousVector.Aoba.DataStore;
 using LuminousVector.Aoba.Server.Credentials;
+using LuminousVector.Aoba.Models;
 
 namespace LuminousVector.Aoba.Server
 {
@@ -20,7 +21,7 @@ namespace LuminousVector.Aoba.Server
 #else
 		public const string BASE_DIR = "K:/Aoba";
 #endif
-		public static string SCREEN_DIR { get { return $"{BASE_DIR}/Screenshots"; } }
+		public static string MEDIA_DIR { get { return $"{BASE_DIR}/Media"; } }
 
 		internal static StatelessAuthenticationConfiguration StatelessConfig { get; private set; } = new StatelessAuthenticationConfiguration(nancyContext =>
 		{
@@ -201,30 +202,36 @@ namespace LuminousVector.Aoba.Server
 			return id;
 		}
 
-		internal static string AddImage(string userName, string fileUri)
+		internal static string AddMedia(string userName, MediaModel media)
 		{
 			using (var con = GetConnection())
 			{
 				using (var cmd = con.CreateCommand())
 				{
 					string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("+", "-").Replace("/", "~").Replace("=", "").Replace(@"\", "."); 
-					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_MediaTable} VALUES('{id}', '{userName}', '{Uri.EscapeDataString(fileUri)}')";
+					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_MediaTable} VALUES('{id}', '{userName}', '{Uri.EscapeDataString(media.uri)}', '{media.type.ToString()}')";
 					cmd.ExecuteNonQuery();
 					return $"{HOST}/i/{id}";
 				}
 			}
 		}
 
-		internal static string GetImage(string id)
+		internal static MediaModel GetMedia(string id)
 		{
 			using (var con = GetConnection())
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"SELECT fileuri FROM {DBCredentials.DB_MediaTable} WHERE id = '{id}'";
+					cmd.CommandText = $"SELECT fileuri, type FROM {DBCredentials.DB_MediaTable} WHERE id = '{id}'";
 					try
 					{
-						return $"{SCREEN_DIR}{Uri.UnescapeDataString((string)cmd.ExecuteScalar())}";
+						using (var reader = cmd.ExecuteReader())
+						{
+							if (!reader.HasRows)
+								return null;
+							reader.Read();
+							return new MediaModel(Uri.UnescapeDataString(reader.GetString(0)), (MediaModel.MediaType)Enum.Parse(typeof(MediaModel.MediaType), reader.GetString(1)));
+						}
 					}catch
 					{
 						return null;

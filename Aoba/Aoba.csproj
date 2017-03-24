@@ -201,7 +201,7 @@
     <Compile Include="ContextMenuInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="DataSerializer.cs" />
+    <Compile Include="DataStore\DataSerializer.cs" />
     <Compile Include="DataStore\Settings.cs" />
     <Compile Include="Keyboard\KeybaordShortcut.cs" />
     <Compile Include="Keyboard\KeyHandler.cs" />

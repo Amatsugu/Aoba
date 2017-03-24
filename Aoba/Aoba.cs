@@ -54,6 +54,8 @@ namespace LuminousVector.Aoba
 		private static ContextMenuInstaller _inst;
 		private static System.Collections.IDictionary _stateSaver;
 		private static int _clickCount = -1;
+		
+
 
 		internal static void Init()
 		{
@@ -99,14 +101,27 @@ namespace LuminousVector.Aoba
 
 
 			//Shortcuts
+			ResolveKeys();
 			KeyHandler = new KeyHandler();
 			KeyHandler.RegisterEventTarget("Capture Window", null);
 			KeyHandler.RegisterEventTarget("Capture Fullscreen", CaptureFullscreenAndSave);
 			KeyHandler.RegisterEventTarget("Capture Region", BeginCapture);
-			KeyHandler.RegisterEventTarget("Upload File", null);
+			KeyHandler.RegisterEventTarget("Upload File", ShowUploadWindow);
 
 			//Region Capture
 			RegisterRegionCapture();	
+		}
+#region Initialization
+
+		private static void ResolveKeys()
+		{
+			foreach(KeybaordShortcut k in Settings.Default.Shortcuts)
+			{
+				if(Settings.Shortcuts.All(x => x.Name != k.Name))
+				{
+					Settings.Shortcuts.Add(k);
+				}
+			}
 		}
 
 		private static void RegisterRegionCapture()
@@ -170,19 +185,9 @@ namespace LuminousVector.Aoba
 			_stateSaver = new Dictionary<object, object>();
 			_inst.Install(_stateSaver);
 		}
+#endregion
 
-		internal async static Task Login()
-		{
-			var token = await _authUri.AppendPathSegment("login").PostJsonAsync(new { username = Settings.Username, password = Settings.Password, authMode = "API"}).ReceiveJson<AuthToken>();
-			Settings.AuthToken = token.ApiKey;
-			CreateCookie();
-		}
-
-		internal static string Upload(string fileUri)
-		{
-			return _apiUri.AppendPathSegment("image").Upload(fileUri, _cookies);
-		}
-
+#region Capture
 		private static void BeginCapture()
 		{
 			if (!_capturingRect)
@@ -244,56 +249,90 @@ namespace LuminousVector.Aoba
 			string fileName = $"{Guid.NewGuid().ToString().Replace("-", "")}{ext}";
 
 			if (Settings.SaveCopy)
-				fileName = Settings.SaveLocation.AppendPathSegment(fileName);
-			screenCap.Save(fileName, Settings.Format);
+				screenCap.Save(Settings.SaveLocation.AppendPathSegment(fileName), Settings.Format);
 			if(!Settings.HasAuth)
 			{
 				Notify("User not logged in", "Upload Failed");
 				return;
 			}
-			try
+			using (MemoryStream image = new MemoryStream())
 			{
-				string uri = Upload(fileName);
-				uri = $"https://{uri}";
-				if (Settings.OpenLink)
-					Process.Start(uri);
-				if (Settings.CopyLink)
-					System.Windows.Clipboard.SetText(uri);
-				if (Settings.PlaySounds && Settings.SoundSuccess)
+				try
 				{
-					_successSound.Stop();
-					_successSound.Play();
+					screenCap.Save(image, Settings.Format);
+					image.Position = 0;
+					string uri = _apiUri.AppendPathSegment("image").Upload(image, fileName, _cookies);
+					UploadSucess(uri);
 				}
-				if (Settings.ShowToasts && Settings.ToastSucess)
+				catch (Exception e)
 				{
-					Notify(_clickUri = uri, "Upload Sucessful");
+					UploadFailed(e);
 				}
-				Debug.WriteLine(uri);
 			}
-			catch (Exception e)
+		}
+#endregion
+
+		private static void ShowUploadWindow()
+		{
+			using (var dialog = new OpenFileDialog())
 			{
-				if (Settings.PlaySounds && Settings.SoundFailed)
+				dialog.Filter = MediaModel.GetFilterString();
+				dialog.FileOk += (s, e) =>
 				{
-					_failedSound.Stop();
-					_failedSound.Play();
-				}
-				if (Settings.ShowToasts && Settings.ToastFailed)
-				{
-					Notify($"Error: {e.Message}", "Upload Failed");
-				}
-				Debug.WriteLine(e.Message);
+					try
+					{
+						String uri = _apiUri.AppendPathSegment("image").Upload(dialog.FileName, _cookies, MediaModel.GetMediaType(dialog.FileName));
+						UploadSucess(uri);
+					}
+					catch(Exception ex)
+					{
+						UploadFailed(ex);
+					}
+				};
+				DialogResult result = dialog.ShowDialog();
 			}
-			if (!Settings.SaveCopy)
-				File.Delete(fileName);
 		}
 
-
-		private static void BalloonClick(object sender, EventArgs e)
+#region Post Upload
+		private static void UploadSucess(string uri)
 		{
-			if (_clickUri == null)
-				return;
-			Process.Start(_clickUri);
-			_clickUri = null;
+			uri = $"https://{uri}";
+			if (Settings.OpenLink)
+				Process.Start(uri);
+			if (Settings.CopyLink)
+				System.Windows.Clipboard.SetText(uri);
+			if (Settings.PlaySounds && Settings.SoundSuccess)
+			{
+				_successSound.Stop();
+				_successSound.Play();
+			}
+			if (Settings.ShowToasts && Settings.ToastSucess)
+			{
+				Notify(_clickUri = uri, "Upload Sucessful");
+			}
+			Debug.WriteLine(uri);
+		}
+
+		private static void UploadFailed(Exception e)
+		{
+			if (Settings.PlaySounds && Settings.SoundFailed)
+			{
+				_failedSound.Stop();
+				_failedSound.Play();
+			}
+			if (Settings.ShowToasts && Settings.ToastFailed)
+			{
+				Notify($"Error: {e.Message}", "Upload Failed");
+			}
+			Debug.WriteLine(e.Message);
+		}
+#endregion
+
+		internal async static Task Login()
+		{
+			var token = await _authUri.AppendPathSegment("login").PostJsonAsync(new { username = Settings.Username, password = Settings.Password, authMode = "API" }).ReceiveJson<AuthToken>();
+			Settings.AuthToken = token.ApiKey;
+			CreateCookie();
 		}
 
 		internal async static Task UpdateStats()
@@ -306,6 +345,14 @@ namespace LuminousVector.Aoba
 			{
 				Notify($"Error: {e.Message}", "Connection Failed");
 			}
+		}
+
+		private static void BalloonClick(object sender, EventArgs e)
+		{
+			if (_clickUri == null)
+				return;
+			Process.Start(_clickUri);
+			_clickUri = null;
 		}
 
 		internal static void Notify(string message, string title = "Aoba", int timeout = 3)

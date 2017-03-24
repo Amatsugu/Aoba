@@ -1,0 +1,31 @@
+@inherits Nancy.ViewEngines.Razor.NancyRazorViewBase<dynamic>
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<link rel="stylesheet" href="/res/css/main.css"/>
+		<link rel="stylesheet" href="/res/css/window.css"/>
+		<link rel="icon" href="/res/img/Aoba.ico"/>
+		<link rel="shortcut-icon" href="/res/img/Aoba.ico"/>
+		<script src="/res/js/jquery-3.1.1.min.js"></script>
+		<script src="/res/js/aurora.js" type="text/javascript"></script>		
+		<script src="/res/js/flac.js" type="text/javascript"></script>
+		<script src="/res/js/mp3.js" type="text/javascript"></script>
+		<script src="/res/js/aac.js" type="text/javascript"></script>
+		<script src="/res/js/alac.js" type="text/javascript"></script>
+		<script src="/res/js/XAudioServer.js" type="text/javascript"></script>
+		<script src="/res/js/resampler.js" type="text/javascript"></script>
+		<script src="/res/js/audioPlayer.js" type="text/javascript"></script>
+	</head>
+	<title>
+		Aoba
+	</title>
+	<body>
+		<div id="windowWrapper">
+			<div id="background"></div>
+			<div id="window">
+				<img src="/res/img/Aoba.ico">
+				<div id="audioData" data-uri="@Model.rawUri" data-format="@Model.format"><a href="@Model.rawUri">Download</a></div>
+			</div>
+		</div>
+	</body>
+</html>

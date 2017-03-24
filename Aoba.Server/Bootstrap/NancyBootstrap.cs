@@ -23,6 +23,7 @@ namespace LuminousVector.Aoba.Server
 			return File.ReadAllBytes(@"AobaWeb/res/img/Aoba.ico");
 		}
 
+
 		protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
 		{
 			Conventions.ViewLocationConventions.Add((viewName, model, context) =>
@@ -34,6 +35,7 @@ namespace LuminousVector.Aoba.Server
 		protected override void ConfigureConventions(NancyConventions nancyConventions)
 		{
 			nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("res", $"AobaWeb/res"));
+			nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("media", $"media"));
 		}
 	}
 }

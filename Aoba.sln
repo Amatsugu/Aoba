@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aoba", "Aoba\Aoba.csproj", "{F41F019E-CFCC-46FE-9361-B9CBB41F21B4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aoba.Server", "Aoba.Server\Aoba.Server.csproj", "{9003211B-6F4F-46ED-9151-5C9F326A0C06}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "DataStore", "DataStore\DataStore.shproj", "{A5CA15C1-FBF9-47E9-B71D-4B390EC4F8DB}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Models", "DataStore\Models.shproj", "{A5CA15C1-FBF9-47E9-B71D-4B390EC4F8DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AobaContextMenu", "AobaContextMenu\AobaContextMenu.csproj", "{C8FB60CC-154D-4454-8F6C-DC7B868F9AAA}"
 EndProject
