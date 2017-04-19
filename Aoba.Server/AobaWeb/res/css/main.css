@@ -15,3 +15,14 @@ p
 {
 	font-family: 'Open Sans', sans-serif;
 }
+
+.error
+{
+	display: block;
+	font-family: 'Roboto', sans-serif;
+	color: #aa2222;
+	background-color: rgba(241, 234, 249, .8);
+	padding: 10px;
+	margin: 0px;
+	border-radius: 5px;
+}

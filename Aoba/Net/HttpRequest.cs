@@ -13,9 +13,9 @@ namespace LuminousVector.Aoba.Net
 {
 	public static class AobaHttpRequest
 	{
-		public static string Upload(this Url targetUrl, string fileUri, CookieContainer cookies = null, MediaType mediaType = MediaType.Image, string method = "POST") => targetUrl.Upload(File.OpenRead(fileUri), Path.GetFileName(fileUri), cookies, mediaType, method);
+		public async static Task<string> Upload(this Url targetUrl, string fileUri, CookieContainer cookies = null, MediaType mediaType = MediaType.Image, string method = "POST") => await targetUrl.Upload(File.OpenRead(fileUri), Path.GetFileName(fileUri), cookies, mediaType, method);
 
-		public static string Upload(this Url targetUrl, Stream file, string fileUri, CookieContainer cookies = null, MediaType mediaType = MediaType.Image, string method = "POST")
+		public async static Task<string> Upload(this Url targetUrl, Stream file, string fileUri, CookieContainer cookies = null, MediaType mediaType = MediaType.Image, string method = "POST")
 		{
 			string sWebAddress = targetUrl;
 			string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
@@ -26,7 +26,7 @@ namespace LuminousVector.Aoba.Net
 			wr.KeepAlive = true;
 			wr.Credentials = CredentialCache.DefaultCredentials;
 			wr.CookieContainer = cookies;
-			Stream stream = wr.GetRequestStream();
+			Stream stream = await wr.GetRequestStreamAsync();
 
 			stream.Write(boundarybytes, 0, boundarybytes.Length);
 			byte[] formitembytes = Encoding.UTF8.GetBytes(fileUri);
@@ -47,7 +47,7 @@ namespace LuminousVector.Aoba.Net
 			stream.Write(trailer, 0, trailer.Length);
 			stream.Close();
 
-			WebResponse response = wr.GetResponse();
+			WebResponse response = await wr.GetResponseAsync();
 			Stream responseStream = response.GetResponseStream();
 			StreamReader streamReader = new StreamReader(responseStream);
 			string responseData = streamReader.ReadToEnd();

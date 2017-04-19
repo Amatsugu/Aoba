@@ -19,6 +19,7 @@ using Flurl;
 using Flurl.Http;
 using System.ComponentModel;
 using System.Diagnostics;
+using LuminousVector.Aoba.Keyboard;
 
 namespace LuminousVector.Aoba
 {
@@ -38,6 +39,10 @@ namespace LuminousVector.Aoba
 		{
 			InitializeComponent();
 			Aoba.Init();
+			if(!Aoba.Settings.HasAuth)
+			{
+				User.Focus();
+			}
 			//Set Values
 			Load();
 			//Tray Icon
@@ -56,7 +61,6 @@ namespace LuminousVector.Aoba
 				pauseItem,
 				new System.Windows.Forms.MenuItem("Quit", (o, e) =>
 				{
-					Aoba.TrayIcon.Visible = false;
 					willExit = true;
 					Aoba.Save();
 					Close();
@@ -90,10 +94,19 @@ namespace LuminousVector.Aoba
 			SaveLocation.Text = Aoba.Settings.SaveLocation;
 			//Fullscreen Capture Mode
 			FullscreenCaputue.SelectedIndex = (int)Aoba.Settings.FullscreenCapture;
+			//Tray
+			CloseToTray.IsChecked = Aoba.Settings.CloseToTray;
+			StartInTray.IsChecked = Aoba.Settings.StartInTray;
 			//Account
 			if (Aoba.Settings.HasAuth)
 				ShowLoggedIn();
 			Username.Text = Aoba.Settings.Username;
+			RenderKeyBinds();
+		}
+
+		private void RenderKeyBinds()
+		{
+			KeybindsList.ItemsSource = Aoba.Settings.Shortcuts;
 		}
 
 		private void Save()
@@ -120,13 +133,14 @@ namespace LuminousVector.Aoba
 			Aoba.Settings.SaveLocation = SaveLocation.Text;
 			//Fullscreen Capture Mode
 			Aoba.Settings.FullscreenCapture = (DataStore.FullscreenCaptureMode)FullscreenCaputue.SelectedIndex;
+			//Tray
+			Aoba.Settings.CloseToTray = (CloseToTray.IsChecked == null) ? false : (bool)CloseToTray.IsChecked;
+			Aoba.Settings.StartInTray = (StartInTray.IsChecked == null) ? false : (bool)StartInTray.IsChecked;
 			Aoba.Save();
 		}
 
 		internal void RestoreWindow(object sender, EventArgs e)
 		{
-
-			Aoba.TrayIcon.Visible = false;
 			Show();
 			if (WindowState != WindowState.Normal)
 				WindowState = WindowState.Normal;
@@ -135,7 +149,6 @@ namespace LuminousVector.Aoba
 		internal void HideWindow()
 		{
 			Hide();
-			Aoba.TrayIcon.Visible = true;
 		}
 
 		protected override void OnStateChanged(EventArgs e)
@@ -151,11 +164,15 @@ namespace LuminousVector.Aoba
 		protected override void OnClosing(CancelEventArgs e)
 		{
 			Save();
+			if (!Aoba.Settings.CloseToTray)
+				willExit = true;
 			if (WindowState == WindowState.Normal)
 			{
-				if(!willExit)
+				if (!willExit)
+				{
 					e.Cancel = true;
-				HideWindow();
+					HideWindow();
+				}
 			}
 			if (willExit)
 				Aoba.Dispose();
@@ -190,15 +207,18 @@ namespace LuminousVector.Aoba
 			if (loginForm == null)
 				loginForm = AccountBox.Content;
 			await Aoba.UpdateStats();
+			var spanel = new StackPanel();
 			var logoutButton = new Button();
-			logoutButton.Content = $"Logout {Aoba.Settings.Username}";
+			logoutButton.Content = $"Logout";
 			logoutButton.Click += (o, e) =>
 			{
 				Aoba.Settings.AuthToken = null;
 				AccountBox.Content = loginForm;
 				UserStatus.Content = "User not logged in...";
 			};
-			AccountBox.Content = logoutButton;
+			spanel.Children.Add(new Label { Content = $"Logged in as: {Aoba.Settings.Username}" });
+			spanel.Children.Add(logoutButton);
+			AccountBox.Content = spanel;
 			UserStatus.Content = $"Upload Count: {Aoba.UserStats?.screenShotCount}";	
 		}
 
@@ -281,5 +301,27 @@ namespace LuminousVector.Aoba
 			Dispose(true);
 		}
 		#endregion
+
+		private void KeybindTabFocus(object sender, RoutedEventArgs e)
+		{
+			Aoba.IsListening = false;
+		}
+
+		private void KeyBindTabUnfocus(object sender, RoutedEventArgs e)
+		{
+			Aoba.IsListening = true;
+		}
+
+		private void TrayClose_Click(object sender, RoutedEventArgs e)
+		{
+			Aoba.Settings.CloseToTray = (CloseToTray.IsChecked == null) ? false : (bool)CloseToTray.IsChecked;
+			Save();
+		}
+
+		private void StartTray_Click(object sender, RoutedEventArgs e)
+		{
+			Aoba.Settings.StartInTray = (StartInTray.IsChecked == null) ? false : (bool)StartInTray.IsChecked;
+			Save();
+		}
 	}
 }

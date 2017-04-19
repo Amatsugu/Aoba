@@ -8,7 +8,7 @@
         Title="Aoba" Height="350" Width="525">
     <Grid>
 		<Border Padding="10">
-			<TabControl>
+			<TabControl x:Name="Tabs">
 				<TabItem Header="General">
 					<StackPanel>
 						<GroupBox Header="Startup">
@@ -85,8 +85,28 @@
 						</StackPanel>
 					</Border>
 				</TabItem>
-				<TabItem Header="Key Bindings">
-					
+				<TabItem Header="Key Bindings" GotFocus="KeybindTabFocus" LostFocus="KeyBindTabUnfocus">
+					<StackPanel>
+						<GroupBox Header="Keybaord Shortcuts">
+							<ListView x:Name="KeybindsList" BorderThickness="0">
+								<ListView.Resources>
+									<Style TargetType="{x:Type GridViewColumnHeader}">
+										<Setter Property="HorizontalContentAlignment" Value="Left" />
+										<Setter Property="Padding" Value="10 0 10 0"/>
+									</Style>
+								</ListView.Resources>
+								<ListView.View>
+									<GridView>
+										<GridViewColumn Header="Function" DisplayMemberBinding="{Binding Name}" />
+										<GridViewColumn Header="Modifiers" DisplayMemberBinding="{Binding Modifiers}" />
+										<GridViewColumn Header="Key" DisplayMemberBinding="{Binding Key}" />
+									</GridView>
+								</ListView.View>
+							</ListView>
+						</GroupBox>
+						<Label FontSize="10" Content="Keyboard shortcuts are disabled while on this screen" Padding="2"/>
+						<Label FontSize="10" Content="Key rebinding is currently not implemented" Padding="2"/>
+					</StackPanel>
 				</TabItem>
 				<TabItem Header="Preferences">
 					<StackPanel>
@@ -134,6 +154,12 @@
 									<ComboBoxItem Content="Capture all screens" IsSelected="False"/>
 									<ComboBoxItem Content="Capture primary" IsSelected="False"/>
 								</ComboBox>
+							</StackPanel>
+						</GroupBox>
+						<GroupBox Header="Tray">
+							<StackPanel>
+								<CheckBox x:Name="CloseToTray" Content="Send to tray on Close" VerticalAlignment="Center" Margin="5 0 0 0" Click="TrayClose_Click"/>
+								<CheckBox x:Name="StartInTray" Content="Start in tray" VerticalAlignment="Center" Margin="5 0 0 0" Click="StartTray_Click"/>
 							</StackPanel>
 						</GroupBox>
 					</StackPanel>

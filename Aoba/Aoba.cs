@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
+using Newtonsoft.Json;
 using LuminousVector.Aoba.Net;
 using LuminousVector.Aoba.Models;
 using LuminousVector.Aoba.Capture;
@@ -26,7 +27,17 @@ namespace LuminousVector.Aoba
 		public static KeyHandler KeyHandler;
 		public static UserStatsModel UserStats;
 		public static NotifyIcon TrayIcon { get; set; }
-		public static bool IsListening { get; set; } = true;
+		public static bool IsListening
+		{
+			get
+			{
+				return _isListening;
+			}
+			set
+			{
+				_isListening = KeyHandler.IsListening = value;
+			}
+		}
 
 
 		private static string _apiUri = "https://aobacapture.com/api";
@@ -54,7 +65,7 @@ namespace LuminousVector.Aoba
 		private static ContextMenuInstaller _inst;
 		private static System.Collections.IDictionary _stateSaver;
 		private static int _clickCount = -1;
-		
+		private static bool _isListening;
 
 
 		internal static void Init()
@@ -62,9 +73,8 @@ namespace LuminousVector.Aoba
 			//Settings
 			try
 			{
-
-				if (File.Exists("Settings.data"))
-					_settings = Settings.Load("Settings.data");
+				if (File.Exists("Settings.json"))
+					_settings = Settings.Load("Settings.json");
 				else
 					_settings = Settings.Default;
 			}catch(Exception e)
@@ -95,7 +105,7 @@ namespace LuminousVector.Aoba
 			//Set Tray Icon
 			TrayIcon = new NotifyIcon();
 			TrayIcon.Icon = new Icon("res/Aobax32.ico");
-			TrayIcon.Visible = false;
+			TrayIcon.Visible = true;
 			TrayIcon.Text = "Aoba";
 			TrayIcon.BalloonTipClicked += BalloonClick;
 
@@ -243,7 +253,7 @@ namespace LuminousVector.Aoba
 			PublishScreen(screenCap);
 		}
 
-		private static void PublishScreen(Image screenCap)
+		private async static void PublishScreen(Image screenCap)
 		{
 			string ext = (Settings.Format == ImageFormat.Png) ? ".png" : ".jpg";
 			string fileName = $"{Guid.NewGuid().ToString().Replace("-", "")}{ext}";
@@ -261,7 +271,7 @@ namespace LuminousVector.Aoba
 				{
 					screenCap.Save(image, Settings.Format);
 					image.Position = 0;
-					string uri = _apiUri.AppendPathSegment("image").Upload(image, fileName, _cookies);
+					string uri = await _apiUri.AppendPathSegment("image").Upload(image, fileName, _cookies);
 					UploadSucess(uri);
 				}
 				catch (Exception e)
@@ -277,14 +287,14 @@ namespace LuminousVector.Aoba
 			using (var dialog = new OpenFileDialog())
 			{
 				dialog.Filter = MediaModel.GetFilterString();
-				dialog.FileOk += (s, e) =>
+				dialog.FileOk += async (s, e) =>
 				{
 					try
 					{
-						String uri = _apiUri.AppendPathSegment("image").Upload(dialog.FileName, _cookies, MediaModel.GetMediaType(dialog.FileName));
+						string uri = await _apiUri.AppendPathSegment("image").Upload(dialog.FileName, _cookies, MediaModel.GetMediaType(dialog.FileName));
 						UploadSucess(uri);
 					}
-					catch(Exception ex)
+					catch (Exception ex)
 					{
 						UploadFailed(ex);
 					}
@@ -330,7 +340,7 @@ namespace LuminousVector.Aoba
 
 		internal async static Task Login()
 		{
-			var token = await _authUri.AppendPathSegment("login").PostJsonAsync(new { username = Settings.Username, password = Settings.Password, authMode = "API" }).ReceiveJson<AuthToken>();
+			var token = await _authUri.AppendPathSegment("login").PostJsonAsync(new { Username = Settings.Username, Password = Settings.Password, AuthMode = "API" }).ReceiveJson<AuthToken>();
 			Settings.AuthToken = token.ApiKey;
 			CreateCookie();
 		}
@@ -355,7 +365,7 @@ namespace LuminousVector.Aoba
 			_clickUri = null;
 		}
 
-		internal static void Notify(string message, string title = "Aoba", int timeout = 3)
+		internal static void Notify(string message, string title = "Aoba", int timeout = 1)
 		{
 			TrayIcon.BalloonTipTitle = title;
 			TrayIcon.BalloonTipText = message;
@@ -364,7 +374,7 @@ namespace LuminousVector.Aoba
 
 		internal static void Save()
 		{
-			Settings.Save("Settings.data");
+			Settings.Save("Settings.json");
 			Debug.WriteLine("Saved");
 		}
 

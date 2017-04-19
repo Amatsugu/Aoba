@@ -4,25 +4,37 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ProtoBuf;
+using Newtonsoft.Json;
 
 namespace LuminousVector.Aoba.Keyboard
 {
-	[ProtoContract]
 	public class KeybaordShortcut
 	{
-		[ProtoIgnore]
-		public string Name { get { return _name; } }
+		[JsonProperty]
+		public string Name { get; private set; }
+		[JsonIgnore]
+		public string Key { get { return _key.ToString(); } }
+		[JsonIgnore]
+		public string Modifiers
+		{
+			get
+			{
+				if (modifiers != null)
+					return modifiers;
+				string[] m = new string[] { (_ctrl) ? "Ctrl" : null, (_shift) ? "Shift" : null, (_alt) ? "Alt" : null };
+				return modifiers = string.Join(" + ", from string s in m where s != null select s);
+			}
+		}
+		[JsonIgnore]
+		private string modifiers;
 
-		[ProtoMember(1)]
-		private string _name;
-		[ProtoMember(2)]
+		[JsonProperty]
 		private Keys _key;
-		[ProtoMember(3)]
+		[JsonProperty]
 		private bool _shift;
-		[ProtoMember(4)]
+		[JsonProperty]
 		private bool _alt;
-		[ProtoMember(5)]
+		[JsonProperty]
 		private bool _ctrl;
 
 		KeybaordShortcut()
@@ -32,7 +44,7 @@ namespace LuminousVector.Aoba.Keyboard
 
 		public KeybaordShortcut(string name, Keys key, bool ctrl = false, bool shift = false, bool alt = false)
 		{
-			_name = name;
+			Name = name;
 			_key = key;
 			_ctrl = ctrl;
 			_shift = shift;

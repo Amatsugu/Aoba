@@ -3,10 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using Nancy.Authentication.Stateless;
 using Npgsql;
-using Nancy.Cryptography;
-using Nancy.Authentication.Forms;
 using LuminousVector.Aoba.Server.Models;
-using LuminousVector.Aoba.Server.DataStore;
 using LuminousVector.Aoba.DataStore;
 using LuminousVector.Aoba.Server.Credentials;
 using LuminousVector.Aoba.Models;
@@ -37,17 +34,6 @@ namespace LuminousVector.Aoba.Server
 				return null;
 			}
 		});
-		internal static FormsAuthenticationConfiguration FormsConfig { get; private set; } = new FormsAuthenticationConfiguration()
-		{
-			CryptographyConfiguration = new CryptographyConfiguration(
-			new RijndaelEncryptionProvider(new PassphraseKeyGenerator(Auth.RjPass, Auth.RjSalt)),
-			new DefaultHmacProvider(new PassphraseKeyGenerator(Auth.HmacPass, Auth.HmacSalt))),
-			UserMapper = new UserMapper()
-
-		};
-
-		private static string CONNECTION_STRING { get { return $"Host={HOST};Username={DBCredentials.DB_User};Password={DBCredentials.DB_Pass};Database={DBCredentials.DB_Name};Pooling=true"; } }
-
 
 		private static string HashPassword(string password)
 		{
@@ -89,7 +75,7 @@ namespace LuminousVector.Aoba.Server
 		/// <returns></returns>
 		internal static NpgsqlConnection GetConnection()
 		{
-			var con = new NpgsqlConnection(CONNECTION_STRING);
+			var con = new NpgsqlConnection(DBCredentials.CONNECTION_STRING);
 			con.Open();
 			return con;
 		}
@@ -105,20 +91,73 @@ namespace LuminousVector.Aoba.Server
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					Console.WriteLine($"Key: {apiKey}");
-					cmd.CommandText = $"SELECT username FROM {DBCredentials.DB_ApiTable} WHERE apikey = '{apiKey}'";
-					string username = cmd.ExecuteScalar() as string;
-					if (string.IsNullOrWhiteSpace(username))
+					try
+					{
+
+						Console.WriteLine($"Key: {apiKey}");
+						cmd.CommandText = $"SELECT userid FROM {DBCredentials.ApiTable} WHERE apikey = '{apiKey}'";
+						string userid = (string)cmd.ExecuteScalar();
+						if (string.IsNullOrWhiteSpace(userid))
+							return null;
+						else
+						{
+							cmd.CommandText = $"SELECT username FROM {DBCredentials.UserTable} WHERE id = '{userid}'";
+							return new UserModel((string)cmd.ExecuteScalar(), userid);
+						}
+					}catch(Exception e)
+					{
+						Console.WriteLine("Auth Failed");
+						Console.WriteLine(e.Message);
+						Console.WriteLine(e.StackTrace);
 						return null;
-					else
-						return new UserModel(username);
+					}
+				}
+			}
+		}
+
+		internal static bool CheckUserExists(string username)
+		{
+			using (var con = GetConnection())
+			{
+				using (var cmd = con.CreateCommand())
+				{
+					cmd.CommandText = $"SELECT username FROM {DBCredentials.UserTable} WHERE username = '{Uri.EscapeDataString(username)}'";
+					return cmd.ExecuteReader().HasRows;
+				}
+			}
+		}
+
+		internal static UserModel GetUserFromID(string userid)
+		{
+			using (var con = GetConnection())
+			{
+				using (var cmd = con.CreateCommand())
+				{
+					try
+					{
+						cmd.CommandText = $"SELECT username, claims FROM {DBCredentials.UserTable} WHERE id = '{userid}';";
+						using (var reader = cmd.ExecuteReader())
+						{
+							if (!reader.HasRows)
+								return null;
+							reader.Read();
+							string username = reader.GetString(0);
+							string[] claims = reader.GetValue(1) as string[];
+							return new UserModel(Uri.UnescapeDataString(username), userid, claims);
+						}
+					}
+					catch (Exception e)
+					{
+						Console.WriteLine(e.Message);
+						return null;
+					}
 				}
 			}
 		}
 
 		internal static string ValidateUser(LoginCredentialsModel user)
 		{
-			if (string.IsNullOrWhiteSpace(user.username) || string.IsNullOrWhiteSpace(user.password))
+			if (string.IsNullOrWhiteSpace(user.Username) || string.IsNullOrWhiteSpace(user.Password))
 				return null;
 			using (var con = GetConnection())
 			{
@@ -126,12 +165,12 @@ namespace LuminousVector.Aoba.Server
 				{
 					try
 					{
-						cmd.CommandText = $"SELECT password FROM {DBCredentials.DB_UserTable} WHERE username='{user.username}';";
-						string passHash = cmd.ExecuteScalar() as string;
-						if (VerifyPassword(user.password, passHash))
-							return GetApiKey(user.username);
-						else
+						cmd.CommandText = $"SELECT password FROM {DBCredentials.UserTable} WHERE username = '{user.Username}';";
+						string passHash = (string)cmd.ExecuteScalar();
+						if (!VerifyPassword(user.Password, passHash))
 							return null;
+						cmd.CommandText = $"SELECT id FROM {DBCredentials.UserTable} WHERE password = '{passHash}'";
+						return GetApiKey((string)cmd.ExecuteScalar());
 					}catch(Exception e)
 					{
 						Console.WriteLine(e.Message);
@@ -141,7 +180,7 @@ namespace LuminousVector.Aoba.Server
 			}
 		}
 
-		internal static string GetApiKey(string username)
+		internal static string GetApiKey(string userid)
 		{
 			using (var con = GetConnection())
 			{
@@ -149,10 +188,10 @@ namespace LuminousVector.Aoba.Server
 				{
 					try
 					{
-						cmd.CommandText = $"SELECT apiKey FROM {DBCredentials.DB_ApiTable} WHERE username='{username}'";
+						cmd.CommandText = $"SELECT apiKey FROM {DBCredentials.ApiTable} WHERE userid='{userid}'";
 						string apiKey = cmd.ExecuteScalar() as string;
 						if (string.IsNullOrWhiteSpace(apiKey))
-							return RegisterNewApiKey(username);
+							return RegisterNewApiKey(userid);
 						else
 							return apiKey;
 					}
@@ -164,52 +203,97 @@ namespace LuminousVector.Aoba.Server
 			}
 		}
 
-		internal static void RegisterUser(string username, string password)
+		internal static bool RegisterUser(LoginCredentialsModel user, string token = null)
+		{
+			var referer = ValidateRegistrationToken(token);
+			if (referer != null)
+			{
+				try
+				{
+					using (var con = GetConnection())
+					{
+						using (var cmd = con.CreateCommand())
+						{
+							cmd.CommandText = $"INSERT INTO {DBCredentials.UserTable} VALUES('{Uri.EscapeDataString(user.Username)}', '{HashPassword(user.Password)}', '{GetNewID()}')";
+							cmd.ExecuteNonQueryAsync();
+						}
+					}
+					RemoveRegToken(token);
+					return true;
+				}catch
+				{
+					return false;
+				}
+			}
+			else
+				return false;
+
+		}
+
+		internal static void RemoveUser(string userid)
 		{
 			using (var con = GetConnection())
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_UserTable} VALUES('{username}', '{HashPassword(password)}', '{(username).ToBase60()}')";
-					cmd.ExecuteNonQuery();
+					cmd.CommandText = $"DELETE FROM {DBCredentials.UserTable} WHERE userid = '{userid}';";
+					cmd.CommandText += $"DELETE FROM {DBCredentials.ApiTable} WHERE userid = '{userid}';";
+					cmd.ExecuteNonQueryAsync();
 				}
 			}
 		}
 
-		internal static void RemoveUser(string username)
-		{
-			using (var con = GetConnection())
-			{
-				using (var cmd = con.CreateCommand())
-				{
-					cmd.CommandText = $"DELETE FROM {DBCredentials.DB_UserTable} WHERE username = '{username}'";
-					cmd.ExecuteNonQuery();
-				}
-			}
-		}
-
-		internal static string RegisterNewApiKey(string user)
+		internal static string RegisterNewApiKey(string userid)
 		{
 			string id = Guid.NewGuid().ToString();
 			using (var con = GetConnection())
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_ApiTable} VALUES('{user}', '{id}')";
-					cmd.ExecuteNonQuery();
+					cmd.CommandText = $"INSERT INTO {DBCredentials.ApiTable} VALUES('{userid}', '{id}')";
+					cmd.ExecuteNonQueryAsync();
 				}
 			}
 			return id;
 		}
 
-		internal static string AddMedia(string userName, MediaModel media)
+		internal static void RemoveRegToken(string token)
+		{
+			token = Uri.EscapeDataString(token);
+			using (var con = GetConnection())
+			{
+				using (var cmd = con.CreateCommand())
+				{
+					cmd.CommandText = $"DELETE FROM {DBCredentials.RegTokenTable} WHERE token = '{token}'";
+					cmd.ExecuteNonQuery();
+				}
+			}
+		}
+
+		internal static string GetNewRegToken(string userid)
 		{
 			using (var con = GetConnection())
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("+", "-").Replace("/", "~").Replace("=", "").Replace(@"\", "."); 
-					cmd.CommandText = $"INSERT INTO {DBCredentials.DB_MediaTable} VALUES('{id}', '{userName}', '{Uri.EscapeDataString(media.uri)}', '{media.type.ToString()}')";
+					string token = Uri.EscapeDataString(GetNewID());
+					cmd.CommandText = $"INSERT INTO {DBCredentials.RegTokenTable} VALUES('{token}', '{userid}')";
+					cmd.ExecuteNonQuery();
+					return token;
+				}
+			}
+		}
+
+		internal static string GetNewID() => Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("+", "-").Replace("/", "~").Replace("=", "").Replace(@"\", ".");
+
+		internal static string AddMedia(string userid, MediaModel media)
+		{
+			using (var con = GetConnection())
+			{
+				using (var cmd = con.CreateCommand())
+				{
+					string id = GetNewID();
+					cmd.CommandText = $"INSERT INTO {DBCredentials.MediaTable} VALUES('{id}', '{userid}', '{Uri.EscapeDataString(media.uri)}', '{media.type.ToString()}')";
 					cmd.ExecuteNonQuery();
 					return $"{HOST}/i/{id}";
 				}
@@ -218,11 +302,12 @@ namespace LuminousVector.Aoba.Server
 
 		internal static MediaModel GetMedia(string id)
 		{
+			id = Uri.EscapeDataString(id);
 			using (var con = GetConnection())
 			{
 				using (var cmd = con.CreateCommand())
 				{
-					cmd.CommandText = $"SELECT fileuri, type FROM {DBCredentials.DB_MediaTable} WHERE id = '{id}'";
+					cmd.CommandText = $"SELECT fileuri, type FROM {DBCredentials.MediaTable} WHERE id = '{id}'";
 					try
 					{
 						using (var reader = cmd.ExecuteReader())
@@ -240,7 +325,7 @@ namespace LuminousVector.Aoba.Server
 			}
 		}
 
-		internal static UserStatsModel GetUserStats(string userName)
+		internal static UserStatsModel GetUserStats(string userid)
 		{
 			using (var con = GetConnection())
 			{
@@ -248,7 +333,7 @@ namespace LuminousVector.Aoba.Server
 				{
 					try
 					{
-						cmd.CommandText = $"SELECT COUNT(owner) FROM {DBCredentials.DB_MediaTable} WHERE owner = '{userName}'";
+						cmd.CommandText = $"SELECT COUNT(owner) FROM {DBCredentials.MediaTable} WHERE owner = '{userid}'";
 						return new UserStatsModel() { screenShotCount = (int)(long)cmd.ExecuteScalar()};
 					}catch
 					{
@@ -258,9 +343,28 @@ namespace LuminousVector.Aoba.Server
 			}
 		}
 
-		internal static bool ValidateRegistrationToken(string token)
+		internal static UserModel ValidateRegistrationToken(string token)
 		{
-			throw new NotImplementedException();
+			token = Uri.EscapeDataString(token);
+			using (var conn = GetConnection())
+			{
+				using (var cmd = conn.CreateCommand())
+				{
+					try
+					{
+						cmd.CommandText = $"SELECT referer FROM {DBCredentials.RegTokenTable} WHERE token='{token}'";
+						string refererID = (string)cmd.ExecuteScalar();
+						if (string.IsNullOrWhiteSpace(refererID))
+							return null;
+						else
+							return GetUserFromID(refererID);
+
+					}catch
+					{
+						return null;
+					}
+				}
+			}
 		}
 	}
 }

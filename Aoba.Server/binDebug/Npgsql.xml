@@ -344,20 +344,43 @@
              to the cache, and then retrieved at the same order.
              </summary>
         </member>
-        <member name="T:Npgsql.Logging.NpgsqlEventId">
+        <member name="T:Npgsql.Logging.ConsoleLoggingProvider">
             <summary>
-            Event IDs emitted by Npgsql's logging facilities.
+            An logging provider that outputs Npgsql logging messages to standard error.
             </summary>
-            <remarks>
-            Although these IDs should remain relatively stable, IDs may be removed or renamed between version.
-            </remarks>
+        </member>
+        <member name="M:Npgsql.Logging.ConsoleLoggingProvider.#ctor(Npgsql.Logging.NpgsqlLogLevel,System.Boolean,System.Boolean)">
+            <summary>
+            Constructs a new <see cref="T:Npgsql.Logging.ConsoleLoggingProvider"/>
+            </summary>
+            <param name="minLevel">Only messages of this level of higher will be logged</param>
+            <param name="printLevel">If true, will output the log level (e.g. WARN). Defaults to false.</param>
+            <param name="printConnectorId">If true, will output the connector ID. Defaults to false.</param>
+        </member>
+        <member name="M:Npgsql.Logging.ConsoleLoggingProvider.CreateLogger(System.String)">
+            <summary>
+            Creates a new <see cref="T:Npgsql.Logging.ConsoleLogger"/> instance of the given name.
+            </summary>
+        </member>
+        <member name="T:Npgsql.Logging.INpgsqlLoggingProvider">
+            Used to create logger instances of the given name.
+        </member>
+        <member name="M:Npgsql.Logging.INpgsqlLoggingProvider.CreateLogger(System.String)">
+            <summary>
+            Creates a new INpgsqlLogger instance of the given name.
+            </summary>
+        </member>
+        <member name="T:Npgsql.Logging.NpgsqlLogger">
+            <summary>
+            A generic interface for logging.
+            </summary>
         </member>
         <member name="T:Npgsql.Logging.NpgsqlLogManager">
             <summary>
             Manages logging for Npgsql, used to set the loggging provider.
             </summary>
         </member>
-        <member name="P:Npgsql.Logging.NpgsqlLogManager.LoggerFactory">
+        <member name="P:Npgsql.Logging.NpgsqlLogManager.Provider">
             <summary>
             The logging provider used for logging in Npgsql.
             </summary>
@@ -1901,6 +1924,11 @@
             Defaults to 5.
             </summary>
         </member>
+        <member name="P:Npgsql.NpgsqlConnectionStringBuilder.UsePerfCounters">
+            <summary>
+            Writes connection performance information to performance counters.
+            </summary>
+        </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.NoResetOnClose">
             <summary>
             If set to true, a pool connection's state won't be reset when it is closed (improves performance).
@@ -1919,27 +1947,27 @@
         </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.ConnectionLifeTime">
             <summary>
-            Obsolete, see http://www.npgsql.org/doc/3.1/migration.html
+            Obsolete, see http://www.npgsql.org/doc/migration/3.1.html
             </summary>
         </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.ContinuousProcessing">
             <summary>
-            Obsolete, see http://www.npgsql.org/doc/3.1/migration.html
+            Obsolete, see http://www.npgsql.org/doc/migration/3.1.html
             </summary>
         </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.BackendTimeouts">
             <summary>
-            Obsolete, see http://www.npgsql.org/doc/3.1/migration.html
+            Obsolete, see http://www.npgsql.org/doc/migration/3.1.html
             </summary>
         </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.PreloadReader">
             <summary>
-            Obsolete, see http://www.npgsql.org/doc/3.0/migration.html
+            Obsolete, see http://www.npgsql.org/doc/migration/3.0.html
             </summary>
         </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.UseExtendedTypes">
             <summary>
-            Obsolete, see http://www.npgsql.org/doc/3.0/migration.html
+            Obsolete, see http://www.npgsql.org/doc/migration/3.0.html
             </summary>
         </member>
         <member name="M:Npgsql.NpgsqlConnectionStringBuilder.Equals(System.Object)">
@@ -2166,12 +2194,6 @@
         <member name="F:Npgsql.NpgsqlConnector._userLock">
             <summary>
             A lock that's taken while a user action is in progress, e.g. a command being executed.
-            </summary>
-        </member>
-        <member name="F:Npgsql.NpgsqlConnector._keepAliveLock">
-            <summary>
-            A lock that's taken while a connection keepalive is in progress. Used to make sure
-            keepalives and user actions don't interfere with one another.
             </summary>
         </member>
         <member name="P:Npgsql.NpgsqlConnector.CancelLock">

@@ -1,5 +1,7 @@
 using System;
 using Nancy;
+using Nancy.ModelBinding;
+using LuminousVector.Aoba.Server.Models;
 
 namespace LuminousVector.Aoba.Server.Modules
 {
@@ -9,10 +11,20 @@ namespace LuminousVector.Aoba.Server.Modules
 		{
 			Get["/{token}"] = p =>
 			{
-				if (Aoba.ValidateRegistrationToken((string)p.token))
-					return View["register"];
+				var referer = Aoba.ValidateRegistrationToken((string)p.token);
+				if (referer == null || referer == UserModel.Overlord)
+					return new Response { StatusCode = HttpStatusCode.Unauthorized };
 				else
-					return View["expired"];
+					return View["register", new { referer = referer.UserName}];
+			};
+
+			Post["/{token}"] = p =>
+			{
+				var userInfo = this.Bind<LoginCredentialsModel>();
+				if (Aoba.RegisterUser(userInfo, (string)p.token))
+					return new Response { StatusCode = HttpStatusCode.OK };
+				else
+					return new Response { StatusCode = HttpStatusCode.Unauthorized };
 			};
 		}
 	}

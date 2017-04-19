@@ -26,7 +26,23 @@ namespace LuminousVector.Aoba.Server.Bootstrap
 			viewRenderer = renderer;
 		}
 
-		public void Handle(HttpStatusCode statusCode, NancyContext context) => context.Response = viewRenderer.RenderView(context, "error", new { statusCode = statusCode, message = StatusCodeMessages.GetMessage(statusCode) });
+		public void Handle(HttpStatusCode statusCode, NancyContext context)
+		{
+			if (statusCode == HttpStatusCode.Unauthorized && context.Request.Path == "/")
+			{
+				context.Response = viewRenderer.RenderView(context, "login");
+				context.Response.StatusCode = HttpStatusCode.Unauthorized;
+			}
+			else
+			{
+				context.Response = viewRenderer.RenderView(context, "error", new
+				{
+					statusCode = statusCode,
+					message = StatusCodeMessages.GetMessage(statusCode)
+				});
+				context.Response.StatusCode = statusCode;
+			}
+		}
 
 		public bool HandlesStatusCode(HttpStatusCode statusCode, NancyContext context) => _handledCodes.Any(x => x == statusCode);
 	}

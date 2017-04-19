@@ -1,11 +1,28 @@
-var username;
-var password;
-var sumbit;
+var error;
+var form;
 
-$(document).ready(new function(e){
-	username = $("#login input[name=username]");
-	password = $("#login input[name=password]");
-	sumbit = $("#login input[type=sumbit]").click(new function(e){
+$(document).ready(function(){
+	error = $("#login #formError");
+	
+	form = $("#login").submit(function(e){
 		e.preventDefault();
+		console.log("sumbit");
+		$.ajax({
+			url:"/auth/login",
+			type:"POST",
+			data: form.serialize(),
+			success:function(r){
+				console.log("s");
+				location.reload();
+			},
+			error:function(e)
+			{
+				error.text("Login information invalid");
+				error.fadeIn();
+			}
+		});
 	});
+	
+	
 });
+

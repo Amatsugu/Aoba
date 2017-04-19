@@ -9,6 +9,7 @@ using ProtoBuf;
 using LuminousVector.Serialization;
 using System.IO;
 using LuminousVector.Aoba.Keyboard;
+using Newtonsoft.Json;
 
 namespace LuminousVector.Aoba.DataStore
 {
@@ -22,6 +23,10 @@ namespace LuminousVector.Aoba.DataStore
 	[ProtoContract]
 	public class Settings
 	{
+		public Settings()
+		{
+
+		}
 
 		public static Settings Default
 		{
@@ -44,6 +49,8 @@ namespace LuminousVector.Aoba.DataStore
 					OpenLink = false,
 					Format = ImageFormat.Png,
 					SaveCopy = false,
+					CloseToTray = true,
+					StartInTray = false,
 					SaveLocation = $@"{Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)}\Aoba",
 					FullscreenCapture = FullscreenCaptureMode.CursorScreen,
 					Shortcuts = new List<KeybaordShortcut>()
@@ -57,66 +64,52 @@ namespace LuminousVector.Aoba.DataStore
 			}
 		}
 		//User
-		[ProtoMember(18)]
 		public string Username { get; set; }
-		[ProtoIgnore]
+		[JsonIgnore]
 		public string Password { get; set; }
-		[ProtoMember(16)]
 		public string AuthToken { get; set; }
-		[ProtoIgnore]
+		[JsonIgnore]
 		public bool HasAuth { get { return !string.IsNullOrWhiteSpace(AuthToken); } }
 
 		//Startup
-		[ProtoMember(1)]
 		public bool RunAtStart { get; set; }
 
 		//Sounds
-		[ProtoMember(2)]
 		public bool PlaySounds { get; set; }
-		[ProtoMember(3)]
 		public bool SoundSuccess { get; set; }
-		[ProtoMember(4)]
 		public bool SoundFailed { get; set; }
-		[ProtoMember(5)]
 		public bool SoundCapure { get; set; }
 
 		//Toasts
-		[ProtoMember(6)]
 		public bool ShowToasts { get; set; }
-		[ProtoMember(7)]
 		public bool ToastSucess { get; set; }
-		[ProtoMember(8)]
 		public bool ToastFailed { get; set; }
-		[ProtoMember(9)]
 		public bool ToastCapture { get; set; }
 
 		//After Upload
-		[ProtoMember(10)]
 		public bool CopyLink { get; set; }
-		[ProtoMember(11)]
 		public bool OpenLink { get; set; }
 
 		//Image Format
-		[ProtoMember(12)]
 		public ImageFormat Format { get; set; }
 
 		//Saving
-		[ProtoMember(13)]
 		public bool SaveCopy { get; set; } = false;
-		[ProtoMember(14)]
 		public string SaveLocation { get; set; }
 
 		//Fullscreen capture
-		[ProtoMember(15)]
 		public FullscreenCaptureMode FullscreenCapture { get; set; }
 
 		//Keys
-		[ProtoMember(17)]
 		public List<KeybaordShortcut> Shortcuts { get; set; }
 
-		public static Settings Load(string file) => DataSerializer.DeserializeData<Settings>(File.ReadAllBytes(file));
+		//Tray
+		public bool CloseToTray { get; set; }
+		public bool StartInTray { get; set; }
 
-		public void Save(string file) => File.WriteAllBytes(file, DataSerializer.SerializeData(this));
+		public static Settings Load(string file) => JsonConvert.DeserializeObject<Settings>(File.ReadAllText(file));
+
+		public void Save(string file) => File.WriteAllText(file, JsonConvert.SerializeObject(this));
 
 
 	}

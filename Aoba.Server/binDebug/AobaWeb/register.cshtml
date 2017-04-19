@@ -1,23 +1,25 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
+		<title>
+			Aoba | Register
+		</title>
 		<link rel="stylesheet" href="/res/css/main.css"/>
-		<link rel="stylesheet" href="res/css/window.css"/>
+		<link rel="stylesheet" href="/res/css/window.css"/>
 		<link rel="icon" href="/res/img/Aoba.ico"/>
 		<link rel="shortcut-icon" href="/res/img/Aoba.ico"/>
 		<script src="/res/js/jquery-3.1.1.min.js" type="text/javascript"></script>
-		<script src="/res/js/login.js" type="text/javascript"></script>
+		<script src="/res/js/register.js" type="text/javascript"></script>
 	</head>
-	<title>
-		Aoba | Register
-	</title>
 	<body>
 		<div id="windowWrapper">
 			<div id="background"></div>
 			<div id="window">
 				<img src="/res/img/Aoba.ico">
 				<h1>Register</h1>
+				<h3>You've been invited by @Model.referer</h3>
 				<form id="login">
+					<label id="formError" class="error" style="display:none"></label><br>
 					<input type="text" placeholder="Username" name="username" maxlength="128"><br>
 					<input type="password" placeholder="Password" name="password"><br>
 					<input type="password" placeholder="Confirm" name="password2"><br>

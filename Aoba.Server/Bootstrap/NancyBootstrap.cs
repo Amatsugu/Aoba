@@ -6,7 +6,7 @@ using Nancy.Conventions;
 using Nancy.Bootstrapper;
 using Nancy.Authentication.Stateless;
 
-namespace LuminousVector.Aoba.Server
+namespace LuminousVector.Aoba.Server.Bootstrap
 {
 	public class NancyBootstrap : DefaultNancyBootstrapper
 	{
@@ -26,16 +26,23 @@ namespace LuminousVector.Aoba.Server
 
 		protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
 		{
+			StaticConfiguration.Caching.EnableRuntimeViewDiscovery = StaticConfiguration.Caching.EnableRuntimeViewUpdates = true;
 			Conventions.ViewLocationConventions.Add((viewName, model, context) =>
 			{
 				return string.Concat("AobaWeb/", viewName);
 			});
 		}
 
+#if DEBUG
+		protected override IRootPathProvider RootPathProvider
+		{
+			get { return new RootProvider(); }
+		}
+#endif
+
 		protected override void ConfigureConventions(NancyConventions nancyConventions)
 		{
 			nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("res", $"AobaWeb/res"));
-			nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("media", $"media"));
 		}
 	}
 }

@@ -93,3 +93,8 @@
 	background-color: rgba(241, 234, 249, 1);
 }
 
+#window input.invalidInput
+{
+	border: 1px solid #f00;
+}
+

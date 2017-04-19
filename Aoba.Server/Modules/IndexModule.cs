@@ -1,5 +1,6 @@
 using System;
 using Nancy;
+using Nancy.Authentication.Stateless;
 using Nancy.Security;
 
 namespace LuminousVector.Aoba.Server.Modules
@@ -8,15 +9,12 @@ namespace LuminousVector.Aoba.Server.Modules
 	{
 		public IndexModule() : base("/")
 		{
-			Get["/image/{id}"] = p => Response.AsRedirect($"/i/{(string)p.id}");
-
+			StatelessAuthentication.Enable(this, Aoba.StatelessConfig);
+			this.RequiresAuthentication();
 			Get["/"] = p =>
 			{
 				Console.WriteLine($"User: {Context.CurrentUser?.UserName}");
-				if (Context.CurrentUser == null)
-					return View["login"];
-				else
-					return View["index"];
+				return View["index"];
 			};
 			
 		}

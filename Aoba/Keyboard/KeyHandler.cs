@@ -17,6 +17,7 @@ namespace LuminousVector.Aoba.Keyboard
 		public event EventHandler<MouseEventExtArgs> MouseDown { add { _globalHook.MouseDownExt += value; } remove { _globalHook.MouseDownExt -= value; } }
 		public event EventHandler<MouseEventExtArgs> MouseUp { add { _globalHook.MouseUpExt += value; } remove { _globalHook.MouseUpExt -= value; } }
 		public event EventHandler<MouseEventExtArgs> DragEnd { add { _globalHook.MouseDragFinishedExt += value; } remove { _globalHook.MouseDragFinishedExt -= value; } }
+		public bool IsListening = true;
 
 		private IKeyboardMouseEvents _globalHook;
 		//private IKeyboardMouseEvents _mouseHook;
@@ -56,6 +57,8 @@ namespace LuminousVector.Aoba.Keyboard
 
 		private void CheckKey(object sender, KeyEventArgs e)
 		{
+			if (!IsListening)
+				return;
 			if (!_allowNextPress)
 				return;
 			foreach(KeybaordShortcut s in _shortcuts)
