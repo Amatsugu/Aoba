@@ -2,6 +2,7 @@ using System;
 using Nancy;
 using Nancy.Authentication.Stateless;
 using Nancy.Security;
+using System.Linq;
 
 namespace LuminousVector.Aoba.Server.Modules
 {
@@ -16,7 +17,6 @@ namespace LuminousVector.Aoba.Server.Modules
 				Console.WriteLine($"User: {Context.CurrentUser?.UserName}");
 				return View["index"];
 			};
-			
 		}
 	}
 }

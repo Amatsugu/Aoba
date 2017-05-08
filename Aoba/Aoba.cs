@@ -65,7 +65,7 @@ namespace LuminousVector.Aoba
 		private static ContextMenuInstaller _inst;
 		private static System.Collections.IDictionary _stateSaver;
 		private static int _clickCount = -1;
-		private static bool _isListening;
+		private static bool _isListening = true;
 
 
 		internal static void Init()

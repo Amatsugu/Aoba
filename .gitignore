@@ -240,5 +240,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
 Aoba.Server/Credentials/DBCredentials.cs
 Aoba.Server/Credentials/Auth.cs
