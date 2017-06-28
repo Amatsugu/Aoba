@@ -11,7 +11,7 @@
 		<link rel="stylesheet" href="/res/css/window.css"/>
 		<link rel="stylesheet" href="/res/css/audioPlayer.css"/>
 		<script src="/res/js/jquery-3.1.1.min.js"></script>
-		<script src="/res/js/aurora.js" type="text/javascript"></script>
+		<script src="/res/js/aurora.js" type="text/javascript"></script>		
 		<script src="/res/js/flac.js" type="text/javascript"></script>
 		<script src="/res/js/mp3.js" type="text/javascript"></script>
 		<script src="/res/js/aac.js" type="text/javascript"></script>
@@ -22,31 +22,25 @@
 		<div id="windowWrapper">
 			<div id="background"></div>
 			<div id="window">
-				<div id="player" data-uri="@Model.rawUri">
-					<div id="art">
-						<div id="playPause" style="background:url(/res/img/PlayButton.png)"></div>
+				<img src="/res/img/Aoba.ico">
+				<div id="audioPlayer" data-uri="@Model.rawUri" data-format="@Model.format">
+					<div id="playButton">
+						<img id="playIcon" src="/res/img/PlayButton.png">
 					</div>
-					<div id="info">
-						<div id="title">Loading...</div>
-						<div id="artist"></div>
-						<div id="album"></div>
-					</div>
-					<div id="controls">
-						<div id="seek">
-							<div id="time">0:00</div>
-							<div id="progressBar">
-								<div id="progressBarFill"></div>
+					<div id="playbackContainer">
+						<div id="info">
+							<img id="art" src="/res/img/Aoba.ico">
+							<div id="text">
+								<div id="title">Loading...</div>
+								<div id="artist"></div>
+								<div id="time"></div>
 							</div>
-							<div id="timeRemaining">0:00</div>
 						</div>
-						<div id="volume">
-							<div id="mute"></div>
-							<div id="volumeSlider">
-								<div id="volumeFill"></div>
-							</div>
-							<div id="volumeValue">80%</div>
+						<div id="seekBar">
+							<div id="fill"></div>
 						</div>
 					</div>
+					<div id="volume"></div>
 				</div>
 			</div>
 		</div>
