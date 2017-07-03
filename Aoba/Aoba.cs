@@ -103,10 +103,12 @@ namespace LuminousVector.Aoba
 			}
 
 			//Set Tray Icon
-			TrayIcon = new NotifyIcon();
-			TrayIcon.Icon = new Icon("res/Aobax32.ico");
-			TrayIcon.Visible = true;
-			TrayIcon.Text = "Aoba";
+			TrayIcon = new NotifyIcon()
+			{
+				Icon = new Icon("res/Aobax32.ico"),
+				Visible = true,
+				Text = "Aoba"
+			};
 			TrayIcon.BalloonTipClicked += BalloonClick;
 
 
@@ -166,9 +168,11 @@ namespace LuminousVector.Aoba
 					{
 						Point cPos = Cursor.Position;
 						e.Handled = true;
-						var size = new Size();
-						size.Width = Math.Abs(Cursor.Position.X - _captureRegion.X);
-						size.Height = Math.Abs(Cursor.Position.Y - _captureRegion.Y);
+						var size = new Size()
+						{
+							Width = Math.Abs(Cursor.Position.X - _captureRegion.X),
+							Height = Math.Abs(Cursor.Position.Y - _captureRegion.Y)
+						};
 						if (_captureRegion.X > cPos.X)
 							_captureRegion.X = cPos.X;
 						if (_captureRegion.Y > cPos.Y)

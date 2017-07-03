@@ -35,6 +35,15 @@
 	filter: drop-shadow(0 0 8px #000);
 }
 
+#player #loadProgress
+{
+	grid-column: 1;
+	grid-row: 1 / span 2;
+	line-height: 200px;
+	font-size: 50px;
+	z-index: 1;
+}
+
 #player #info
 {
 	grid-column: 2;
@@ -85,7 +94,7 @@
 #seek #progressBar #progressBarFill
 {
 	background-color: var(--main-color);
-	width: 50px;
+	width: 0px;
 	transition: width .5s;
 	height: inherit;
 }

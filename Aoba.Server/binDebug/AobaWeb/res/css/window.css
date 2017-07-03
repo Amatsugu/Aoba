@@ -23,7 +23,6 @@
 	display: block;
 	height: inherit;
 	width: inherit;
-	filter: blur(15px)
 }
 
 #windowWrapper #window
@@ -41,6 +40,7 @@
 	text-align: center;
 	box-shadow: 0px 0px 20px rgba(88, 63, 114,.5);
 	border-radius: 10px;
+	overflow: hidden;
 }
 
 #window h1
@@ -97,4 +97,3 @@
 {
 	border: 1px solid #f00;
 }
-

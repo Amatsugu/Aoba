@@ -1891,6 +1891,20 @@
             Set to 0 (the default) to disable.
             </summary>
         </member>
+        <member name="P:Npgsql.NpgsqlConnectionStringBuilder.TcpKeepAliveTime">
+            <summary>
+            The number of seconds of connection inactivity before a TCP keepalive query is sent.
+            Use of this option is discouraged, use <see cref="P:Npgsql.NpgsqlConnectionStringBuilder.KeepAlive"/> instead if possible.
+            Set to 0 (the default) to disable. Supported only on Windows.
+            </summary>
+        </member>
+        <member name="P:Npgsql.NpgsqlConnectionStringBuilder.TcpKeepAliveInterval">
+            <summary>
+            The interval, in milliseconds, between when successive keep-alive packets are sent if no acknowledgement is received.
+            Defaults to the value of <see cref="P:Npgsql.NpgsqlConnectionStringBuilder.TcpKeepAliveTime"/>. <see cref="P:Npgsql.NpgsqlConnectionStringBuilder.TcpKeepAliveTime"/> must be non-zero as well.
+            Supported only on Windows.
+            </summary>
+        </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.ReadBufferSize">
             <summary>
             Determines the size of the internal buffer Npgsql uses when reading. Increasing may improve performance if transferring large values from the database.
@@ -1898,7 +1912,7 @@
         </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.WriteBufferSize">
             <summary>
-            Determines the size of the internal buffer Npgsql uses when reading. Increasing may improve performance if transferring large values from the database.
+            Determines the size of the internal buffer Npgsql uses when writing. Increasing may improve performance if transferring large values to the database.
             </summary>
         </member>
         <member name="P:Npgsql.NpgsqlConnectionStringBuilder.SocketReceiveBufferSize">
@@ -2654,7 +2668,12 @@
         </member>
         <member name="M:Npgsql.NpgsqlDataReader.Close">
             <summary>
-            Closes the <see cref="T:Npgsql.NpgsqlDataReader"/> object.
+            Closes the <see cref="T:Npgsql.NpgsqlDataReader"/> reader, allowing a new command to be executed.
+            </summary>
+        </member>
+        <member name="M:Npgsql.NpgsqlDataReader.CloseAsync">
+            <summary>
+            Closes the <see cref="T:Npgsql.NpgsqlDataReader"/> reader, allowing a new command to be executed.
             </summary>
         </member>
         <member name="P:Npgsql.NpgsqlDataReader.Row">
@@ -3012,6 +3031,12 @@
             Initializes a new instance of the <see cref="T:Npgsql.NpgsqlException"/> class with a specified error message.
             </summary>
             <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="P:Npgsql.NpgsqlException.IsTransient">
+            <summary>
+            Specifies whether the exception is considered transient, that is, whether retrying to operation could
+            succeed (e.g. a network error).
+            </summary>
         </member>
         <member name="M:Npgsql.NpgsqlException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
             <summary>
@@ -4298,17 +4323,6 @@
             Represents a timeout that will expire at some point.
             </summary>
         </member>
-        <member name="T:Npgsql.NoSynchronizationContextScope">
-            <summary>
-            This mechanism is used to temporarily set the current synchronization context to null while
-            executing Npgsql code, making all await continuations execute on the thread pool. This replaces
-            the need to place ConfigureAwait(false) everywhere, and should be used in all surface async methods,
-            without exception.
-            </summary>
-            <remarks>
-            http://stackoverflow.com/a/28307965/640325
-            </remarks>
-        </member>
         <member name="P:Npgsql.PoolManager.Pools">
             <summary>
             Holds connector pools indexed by their connection strings.
@@ -4489,6 +4503,12 @@
         <member name="P:Npgsql.PostgresException.Message">
             <summary>
             Gets a the PostgreSQL error message and code.
+            </summary>
+        </member>
+        <member name="P:Npgsql.PostgresException.IsTransient">
+            <summary>
+            Specifies whether the exception is considered transient, that is, whether retrying to operation could
+            succeed (e.g. a network error). Check <see cref="P:Npgsql.PostgresException.SqlState"/>.
             </summary>
         </member>
         <member name="P:Npgsql.PostgresException.Statement">
@@ -4717,17 +4737,22 @@
             </summary>
         </member>
         <member name="T:Npgsql.PostgresTypes.PostgresDomainType">
-            <summary>
-            Represents a PostgreSQL domain type.
-            </summary>
-            <remarks>
-            See https://www.postgresql.org/docs/current/static/sql-createdomain.html.
+             <summary>
+             Represents a PostgreSQL domain type.
+             </summary>
+             <remarks>
+             See https://www.postgresql.org/docs/current/static/sql-createdomain.html.
             
-            When PostgreSQL returns a RowDescription for a domain type, the type OID is the base type's
-            (so fetching a domain type over text returns a RowDescription for text).
-            However, when a composite type is returned, the type OID there is that of the domain,
-            so we provide "clean" support for domain types.
-            </remarks>
+             When PostgreSQL returns a RowDescription for a domain type, the type OID is the base type's
+             (so fetching a domain type over text returns a RowDescription for text).
+             However, when a composite type is returned, the type OID there is that of the domain,
+             so we provide "clean" support for domain types.
+             </remarks>
+        </member>
+        <member name="P:Npgsql.PostgresTypes.PostgresDomainType.BaseType">
+            <summary>
+            The PostgreSQL data type of the base type, i.e. the type this domain is based on.
+            </summary>
         </member>
         <member name="M:Npgsql.PostgresTypes.PostgresDomainType.#ctor(System.String,System.String,System.UInt32,Npgsql.PostgresTypes.PostgresType)">
             <summary>
@@ -4877,11 +4902,19 @@
             The state of a <see cref="T:Npgsql.PreparedStatement"/>.
             </summary>
         </member>
-        <member name="F:Npgsql.PreparedState.NotYetPrepared">
+        <member name="F:Npgsql.PreparedState.NotPrepared">
             <summary>
             The statement hasn't been prepared yet, nor is it in the process of being prepared.
             This is the value for autoprepare candidates which haven't been prepared yet, and is also
             a temporary state during preparation.
+            </summary>
+        </member>
+        <member name="F:Npgsql.PreparedState.ToBePrepared">
+            <summary>
+            The statement has been selected for preparation, but the preparation hasn't started yet.
+            This is a temporary state that only occurs during preparation.
+            Specifically, no protocol message (Parse) has been sent yet. Specifically, it means that
+            a Parse message for the statement has already been written to the write buffer.
             </summary>
         </member>
         <member name="F:Npgsql.PreparedState.BeingPrepared">
@@ -4988,6 +5021,11 @@
             See https://github.com/dotnet/corefx/blob/master/src/System.Data.Common/src/System/Data/Common/DbColumn.cs
             </remarks>
         </member>
+        <member name="M:Npgsql.Schema.DbColumnSchemaGenerator.GenerateOldColumnsQuery(System.String)">
+            <summary>
+            Stripped-down version of <see cref="M:Npgsql.Schema.DbColumnSchemaGenerator.GenerateColumnsQuery(System.String)"/>, mainly to support Amazon Redshift.
+            </summary>
+        </member>
         <member name="M:Npgsql.Schema.DbColumnSchemaGenerator.ColumnPostConfig(Npgsql.Schema.NpgsqlDbColumn,System.Int32)">
             <summary>
             Performs some post-setup configuration that's common to both table columns and non-columns.
@@ -5015,6 +5053,48 @@
             <param name="standardConformantStrings">Whether the PostgreSQL session is configured to use standard conformant strings.</param>
             <param name="parameters">The parameters configured on the <see cref="T:Npgsql.NpgsqlCommand"/> of this query.</param>
             <param name="statements">An empty list to be populated with the statements parsed by this method</param>
+        </member>
+        <member name="T:Npgsql.SynchronizationContextSwitcher">
+            <summary>
+            Utility class for temporarily switching <see cref="T:System.Threading.SynchronizationContext"/> implementations.
+            
+            This mechanism is used to temporarily set the current synchronization context to null while
+            executing Npgsql code, making all await continuations execute on the thread pool. This replaces
+            the need to place ConfigureAwait(false) everywhere, and should be used in all surface async methods,
+            without exception.
+            </summary>
+            <remarks>
+            Copied and slightly adjusted from Stephen Cleary's Nito.AsyncEx package
+            (https://github.com/StephenCleary/AsyncEx/blob/master/src/Nito.AsyncEx.Tasks/SynchronizationContextSwitcher.cs)
+            </remarks>
+        </member>
+        <member name="F:Npgsql.SynchronizationContextSwitcher._oldContext">
+            <summary>
+            The previous <see cref="T:System.Threading.SynchronizationContext"/>.
+            </summary>
+        </member>
+        <member name="M:Npgsql.SynchronizationContextSwitcher.#ctor(System.Threading.SynchronizationContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Npgsql.SynchronizationContextSwitcher"/> class, installing the new <see cref="T:System.Threading.SynchronizationContext"/>.
+            </summary>
+            <param name="newContext">The new <see cref="T:System.Threading.SynchronizationContext"/>. This can be <c>null</c> to remove an existing <see cref="T:System.Threading.SynchronizationContext"/>.</param>
+        </member>
+        <member name="M:Npgsql.SynchronizationContextSwitcher.Dispose">
+            <summary>
+            Restores the old <see cref="T:System.Threading.SynchronizationContext"/>.
+            </summary>
+        </member>
+        <member name="M:Npgsql.SynchronizationContextSwitcher.NoContext(System.Action)">
+            <summary>
+            Executes a synchronous delegate without the current <see cref="T:System.Threading.SynchronizationContext"/>. The current context is restored when this function returns.
+            </summary>
+            <param name="action">The delegate to execute.</param>
+        </member>
+        <member name="M:Npgsql.SynchronizationContextSwitcher.NoContext``1(System.Func{``0})">
+            <summary>
+            Executes a synchronous or asynchronous delegate without the current <see cref="T:System.Threading.SynchronizationContext"/>. The current context is restored when this function synchronously returns.
+            </summary>
+            <param name="action">The delegate to execute.</param>
         </member>
         <member name="M:Npgsql.TaskExtensions.WithTimeout``1(System.Threading.Tasks.Task{``0},Npgsql.NpgsqlTimeout)">
             <summary>

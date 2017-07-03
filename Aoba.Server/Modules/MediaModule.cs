@@ -1,18 +1,18 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Nancy;
-using System.IO;
 using static LuminousVector.Aoba.Models.MediaModel;
 using Nancy.Responses;
 
 namespace LuminousVector.Aoba.Server.Modules
 {
-	public class ImageModule : NancyModule
+	public class MediaModule : NancyModule
 	{
-		public ImageModule() : base("/i")
+		public MediaModule() : base("/i")
 		{
 			Get["/{id}"] = p =>
 			{
@@ -40,7 +40,15 @@ namespace LuminousVector.Aoba.Server.Modules
 							//return View["code.cshtml", new { code = File.ReadAllText(uri) }];
 						//Audio
 						case MediaType.Audio:
-							return View["audio.cshtml", new { rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext }];
+							try
+							{
+								var file = TagLib.File.Create(uri);
+								return View["audio.cshtml", new { rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext, title = file.Tag.Title, artist = file.Tag.FirstPerformer, album = file.Tag.Album }];
+							}
+							catch(TagLib.UnsupportedFormatException)
+							{
+								return View["audio.cshtml", new { rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext }];
+							}
 						//Video
 						case MediaType.Video:
 							return Response.FromStream(File.OpenRead(uri), MimeTypes.GetMimeType(media.uri)); // TODO: Video player

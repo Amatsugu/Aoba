@@ -21,13 +21,18 @@ $(document).ready(function(){
 	var art = $("#art");
 	//playIcon.click(TogglePlayPause);
 	art.click(TogglePlayPause);
+	playIcon.hide();
+	
 	var duration = 1;
 	player = AV.Player.fromURL(audio.data("uri"));
 	player.on('duration', function(d) {
 		duration = d;
 	});
+	//Seek
 	seekBar.on('click', function(e){
 		e.preventDefault();
+		if(!player.buffered)
+			return;
 		var pos = e.pageX - seekBar.offset().left;
 		if(pos == lastSeek)
 			return;
@@ -39,7 +44,7 @@ $(document).ready(function(){
 		if(player.buffered > 0)
 			player.seek(seekP * duration);
 	});
-
+	//Volume Slider
 	volumeSlider.on('click', function(e){
 		e.preventDefault();
 		var pos = e.pageX - seekBar.offset().left;
@@ -51,6 +56,7 @@ $(document).ready(function(){
 		var volActual = vol * 100;
 		setVol(volActual);
 	});
+	//Meta data loaded
 	player.on('metadata', function(m){
 		title.text(m.title);
 		artist.text(m.artist);
@@ -58,11 +64,31 @@ $(document).ready(function(){
 		if(m.coverArt)
 			art.css("background-image", "url("+m.coverArt.toBlobURL()+")");
 	});
+	//Playback
 	player.on('progress', function(p) {
 		seekBarFill.css("width", ((p/duration)* 100).toString() + "%");
 		time.text(toMinSec(p));
 		timeLeft.text(toMinSec(duration-p));
 	});
+	//Loading Progress
+	art.circleProgress({
+		value: 0,
+		size: 180,
+		animation:{ duration: 100},
+		fill:{color:"#f1eaf9"}
+	});
+	var loadProgress = $("#player #loadProgress");
+	player.on('buffer', function(p){
+		loadProgress.text(Math.round(p) + "%");
+		art.circleProgress('value', (p/100));
+		if(p >= 100){
+			$("#art canvas").fadeOut(400, function(){
+				playIcon.fadeIn();
+			});
+			loadProgress.fadeOut();
+		}
+	});
+	//Load Volume
 	if(window.localStorage.getItem("volume") == null)
 		setVol(80);
 	else

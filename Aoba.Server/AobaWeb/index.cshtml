@@ -16,7 +16,25 @@
 	<body>
 		<div id="windowWrapper">
 			<div id="background"></div>
-			
+			<div id="header">
+				<div id="logo"></div>
+				<div id="title">Aoba</div>
+				@{
+					string user = "null";
+					try
+					{
+						user = Model.user;	
+					}catch
+					{}
+				}
+				<div id="user"><a href="/logout">@user</a></div>
+			</div>
+			<div id="window" class="big">
+				<div id="toolbar">
+				</div>
+				<div id="contentPanel">
+				</div>
+			</div>
 		</div>
 	</body>
 </html>

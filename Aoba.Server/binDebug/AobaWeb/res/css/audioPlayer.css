@@ -1,95 +1,144 @@
-#audioPlayer
+@import url(vars.css);
+
+#windowWrapper #window
 {
-	--height:80px;
-	--width:450px;
-	display:flex;
-	flex-direction: row;
-	height: var(--height);
-	width: var(--width);
+	padding-top: 0px;
+	padding-bottom: 0px;
 }
 
-#audioPlayer #playButton
+#player
 {
-	background-color: #333;
-	width: var(--height);
-	height: var(--height);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-#playButton #playIcon
-{
-	height: 50px;
-	width: 50px;
-}
-
-#audioPlayer #playbackContainer
-{
-	display: block;
-	height: inherit;
-	background-color: #400;
-	width: calc(100% - 100px);
-}
-
-#playbackContainer #info
-{
-	height: calc(100% - 5px);
-	background-color: #004;
-	display: flex;
+	display:grid;
+	grid-template-columns: 200px auto;
+	grid-template-rows: auto 80px;
+	height: 200px;
+	width: 100%;
 	color: #fff;
 }
 
-#info #art
+#player #art
 {
-	display: block;
-	height: calc(var(--height) - 5px);
-	width: calc(var(--height) - 5px);
-	background-color: #777;
+	grid-column: 1;
+	grid-row: 1 / span 2;
+	background-color: var(--main-color);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-size: cover;
+	background-position: center;
 }
 
-#info #text
+#player #art #playPause
 {
+	height: 50px;
+	width: 50px;
+	filter: drop-shadow(0 0 8px #000);
+}
+
+#player #loadProgress
+{
+	grid-column: 1;
+	grid-row: 1 / span 2;
+	line-height: 200px;
+	font-size: 50px;
+	z-index: 1;
+}
+
+#player #info
+{
+	grid-column: 2;
+	grid-row: 1;
+	padding: 10px;
+	text-align: left;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	align-content: center;
-	text-align: left;
-	padding-left: 10px;
+	font-size: 15px;
 }
 
-#info #text #title
+#info #title
 {
-	
-}
-#info #text #artist
-{
-	color: #ccc;
+	font-size: 20px;
+	font-family: "Roboto", sans-serif;
 }
 
-#info #text #time
+#player #controls
 {
-	color: #aaa;
-	font-size: 12px;
+	grid-column: 2;
+	grid-row: 2;
+	background-color: rgba(0, 0, 0, .2);
+	display: grid;
+	grid-auto-rows: auto auto;
 }
 
-#playbackContainer #seekBar
+#controls #seek
 {
-	height: 5px;
-	width: 100%;
-	background-color: #444;
+	grid-row: 1;
+	display: grid;
+	grid-template-columns: 50px auto 50px;
+	align-items: center;
 }
 
-#playbackContainer #seekBar #fill
+#controls #seek #time
 {
-	background-color: #fff;
-	width: 0%;
+	grid-column: 1;
+}
+
+#controls #seek #progressBar
+{
+	grid-column: 2;
+	height:5px;
+	background-color: var(--main-bg-color);
+}
+
+#seek #progressBar #progressBarFill
+{
+	background-color: var(--main-color);
+	width: 0px;
+	transition: width .5s;
 	height: inherit;
 }
 
-#audioPlayer #volume
+#controls #seek #timeRemaining
 {
-	height: var(--height);
-	width: var(--height);
-	background-color: #040;
+	grid-column: 3;
+}
+
+#controls #volume
+{
+	display: grid;
+	grid-template-columns: 50px auto 50px;
+	align-items: center;
+}
+
+#controls #volume #mute
+{
+	grid-column: 1;
+	height: 30px;
+	width: 30px;
+	filter: drop-shadow(0 0 8px #000);
+	margin-left:calc((50px - 30px)/2);
+	background-image: url(/res/img/mute.png);
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+#controls #volume #volumeSlider
+{
+	grid-column: 2;
+	height: 5px;
+	background-color: var(--main-bg-color);
+}
+
+#volume #volumeSlider #volumeFill
+{
+	height: inherit;
+	width: 80%;
+	background-color: var(--main-color);
+	transition: width .5s;
+}
+
+#controls #volume #volumeValue
+{
+	grid-column: 3;
 }

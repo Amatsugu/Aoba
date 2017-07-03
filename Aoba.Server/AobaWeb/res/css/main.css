@@ -16,6 +16,12 @@ p
 	font-family: 'Open Sans', sans-serif;
 }
 
+a
+{
+	color: var(--main-bg-color);
+	text-decoration: none;
+}
+
 .error
 {
 	display: block;
