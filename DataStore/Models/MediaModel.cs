@@ -78,9 +78,9 @@ namespace LuminousVector.Aoba.Models
 					if (_filterString == null)
 						_filterString = filter;
 					else
-						_filterString += $" | {filter}";
+						_filterString += $" |{filter}";
 				}
-				_filterString += $"|All Files (*.*) | *.*";
+				_filterString = $"All Files (*.*) | *.* |" + _filterString;
 				return _filterString;
 			}
 		}

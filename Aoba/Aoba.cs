@@ -1,29 +1,31 @@
+using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.IO.MemoryMappedFiles;
+using System.Linq;
+using System.Media;
+using System.Net;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Windows.Threading;
 using Flurl;
 using Flurl.Http;
-using System;
-using System.IO;
-using System.Net;
-using System.Text;
-using System.Linq;
-using System.Drawing;
-using System.Diagnostics;
-using System.Windows.Forms;
-using System.Windows.Media;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Drawing.Imaging;
-using Newtonsoft.Json;
-using LuminousVector.Aoba.Net;
-using LuminousVector.Aoba.Models;
 using LuminousVector.Aoba.Capture;
-using LuminousVector.Aoba.Keyboard;
 using LuminousVector.Aoba.DataStore;
+using LuminousVector.Aoba.Keyboard;
+using LuminousVector.Aoba.Models;
+using LuminousVector.Aoba.Net;
+using Clipboard = System.Windows.Clipboard;
+using Timer = System.Threading.Timer;
 
 namespace LuminousVector.Aoba
 {
 	public static class Aoba
 	{
-		public static Settings Settings { get { return _settings; } }
+		public static Settings Settings => _settings;
 		public static KeyHandler KeyHandler;
 		public static UserStatsModel UserStats;
 		public static NotifyIcon TrayIcon { get; set; }
@@ -44,8 +46,8 @@ namespace LuminousVector.Aoba
 		private static string _authUri = "https://aobacapture.com/auth";
 		private static Settings _settings;
 		private static CookieContainer _cookies;
-		private static MediaPlayer _successSound;
-		private static MediaPlayer _failedSound;
+		private static SoundPlayer _successSound;
+		private static SoundPlayer _failedSound;
 		private static string _clickUri = null;
 		private static bool _capturingRect
 		{
@@ -62,21 +64,18 @@ namespace LuminousVector.Aoba
 			}
 		}
 		private static Rectangle _captureRegion;
-		private static ContextMenuInstaller _inst;
-		private static System.Collections.IDictionary _stateSaver;
 		private static int _clickCount = -1;
 		private static bool _isListening = true;
-
+		private static MemoryMappedFile _mFile;
+		private static Timer _uploadShellWatcher;
+		private static Dispatcher _aobaDispatcher;
 
 		internal static void Init()
 		{
 			//Settings
 			try
 			{
-				if (File.Exists("Settings.json"))
-					_settings = Settings.Load("Settings.json");
-				else
-					_settings = Settings.Default;
+				_settings = File.Exists("settings.json") ? Settings.Load("Settings.json") : Settings.Default;
 			}catch(Exception e)
 			{
 				_settings = Settings.Default;
@@ -91,10 +90,11 @@ namespace LuminousVector.Aoba
 			//Sounds
 			try
 			{
-				_successSound = new MediaPlayer();
-				_successSound.Open(new Uri("res/success.mp3", UriKind.Relative));
-				_failedSound = new MediaPlayer();
-				_failedSound.Open(new Uri("res/failed.mp3", UriKind.Relative));
+				var a = Assembly.GetExecutingAssembly();
+				_successSound = new SoundPlayer(a.GetManifestResourceStream("LuminousVector.Aoba.res.success.wav"));
+				_successSound.Load();
+				_failedSound = new SoundPlayer(a.GetManifestResourceStream("LuminousVector.Aoba.res.failed.wav"));
+				_failedSound.Load();
 
 			}
 			catch (Exception e)
@@ -111,6 +111,28 @@ namespace LuminousVector.Aoba
 			};
 			TrayIcon.BalloonTipClicked += BalloonClick;
 
+			//Check For Upload Shell
+			_mFile = MemoryMappedFile.CreateOrOpen("Aoba.ShellUploads", 200_000);
+			_aobaDispatcher = Dispatcher.CurrentDispatcher;
+			_uploadShellWatcher = new Timer(async (o) =>
+			{
+				var s = _mFile.CreateViewStream();
+				var sr = new StreamReader(s);
+				var lines = sr.ReadLine().Replace("\0", "");
+				s.Position = 0;
+				s.Write(new byte[s.Length], 0, (int)s.Length);
+				s.Flush();
+				s.Dispose();
+				sr.Dispose();
+				foreach(string file in lines.Split('\n'))
+				{
+					//Upload
+					if (!string.IsNullOrWhiteSpace(file))
+					{
+						await Upload(file);
+					}
+				}
+			}, null, 0, 500);
 
 			//Shortcuts
 			ResolveKeys();
@@ -121,13 +143,14 @@ namespace LuminousVector.Aoba
 			KeyHandler.RegisterEventTarget("Upload File", ShowUploadWindow);
 
 			//Region Capture
-			RegisterRegionCapture();	
+			RegisterRegionCapture();
+
 		}
 #region Initialization
 
 		private static void ResolveKeys()
 		{
-			foreach(KeybaordShortcut k in Settings.Default.Shortcuts)
+			foreach(var k in Settings.Default.Shortcuts)
 			{
 				if(Settings.Shortcuts.All(x => x.Name != k.Name))
 				{
@@ -142,7 +165,7 @@ namespace LuminousVector.Aoba
 			{
 				if (!IsListening)
 					return;
-				if (e.KeyCode == Keys.Escape && _capturingRect)
+				if ((e.KeyCode == Keys.Escape && _capturingRect))
 				{
 					e.Handled = true;
 					_capturingRect = false;
@@ -166,7 +189,7 @@ namespace LuminousVector.Aoba
 					}
 					else if (_clickCount == 1)
 					{
-						Point cPos = Cursor.Position;
+						var cPos = Cursor.Position;
 						e.Handled = true;
 						var size = new Size()
 						{
@@ -195,9 +218,7 @@ namespace LuminousVector.Aoba
 
 		internal static void InstallContextMenu()
 		{
-			_inst = new ContextMenuInstaller();
-			_stateSaver = new Dictionary<object, object>();
-			_inst.Install(_stateSaver);
+			
 		}
 #endregion
 
@@ -247,6 +268,9 @@ namespace LuminousVector.Aoba
 				case FullscreenCaptureMode.PrimaryScreen:
 					screenCap = ScreenCapture.CapturePrimary();
 					break;
+				default:
+					screenCap = ScreenCapture.CaptureAll();
+					break;
 			}
 			if (screenCap == null)
 				return;
@@ -257,10 +281,10 @@ namespace LuminousVector.Aoba
 			PublishScreen(screenCap);
 		}
 
-		private async static void PublishScreen(Image screenCap)
+		private static async void PublishScreen(Image screenCap)
 		{
-			string ext = (Settings.Format == ImageFormat.Png) ? ".png" : ".jpg";
-			string fileName = $"{Guid.NewGuid().ToString().Replace("-", "")}{ext}";
+			var ext = (Settings.Format == ImageFormat.Png) ? ".png" : ".jpg";
+			var fileName = $"{Guid.NewGuid().ToString().Replace("-", "")}{ext}";
 
 			if (Settings.SaveCopy)
 				screenCap.Save(Settings.SaveLocation.AppendPathSegment(fileName), Settings.Format);
@@ -269,13 +293,13 @@ namespace LuminousVector.Aoba
 				Notify("User not logged in", "Upload Failed");
 				return;
 			}
-			using (MemoryStream image = new MemoryStream())
+			using (var image = new MemoryStream())
 			{
 				try
 				{
 					screenCap.Save(image, Settings.Format);
 					image.Position = 0;
-					string uri = await _apiUri.AppendPathSegment("image").Upload(image, fileName, _cookies);
+					var uri = await _apiUri.AppendPathSegment("image").Upload(image, fileName, _cookies);
 					UploadSucess(uri);
 				}
 				catch (Exception e)
@@ -293,32 +317,41 @@ namespace LuminousVector.Aoba
 				dialog.Filter = MediaModel.GetFilterString();
 				dialog.FileOk += async (s, e) =>
 				{
-					try
-					{
-						string uri = await _apiUri.AppendPathSegment("image").Upload(dialog.FileName, _cookies, MediaModel.GetMediaType(dialog.FileName));
-						UploadSucess(uri);
-					}
-					catch (Exception ex)
-					{
-						UploadFailed(ex);
-					}
+					await Upload(dialog.FileName);
 				};
-				DialogResult result = dialog.ShowDialog();
+				var result = dialog.ShowDialog();
 			}
 		}
 
-#region Post Upload
+		private static async Task Upload(string file)
+		{
+			try
+			{
+				var uri = await _apiUri.AppendPathSegment("image").Upload(file, _cookies, MediaModel.GetMediaType(file));
+				UploadSucess(uri);
+			}
+			catch (Exception ex)
+			{
+				UploadFailed(ex);
+			}
+		}
+
+		#region Post Upload
 		private static void UploadSucess(string uri)
 		{
 			uri = $"https://{uri}";
 			if (Settings.OpenLink)
 				Process.Start(uri);
 			if (Settings.CopyLink)
-				System.Windows.Clipboard.SetText(uri);
+				_aobaDispatcher.BeginInvoke(new Action(() => Clipboard.SetText(uri)));
 			if (Settings.PlaySounds && Settings.SoundSuccess)
 			{
-				_successSound.Stop();
-				_successSound.Play();
+				try
+				{
+					_successSound.Stop();
+					_successSound.Play();
+				}catch
+				{ }
 			}
 			if (Settings.ShowToasts && Settings.ToastSucess)
 			{
@@ -331,8 +364,12 @@ namespace LuminousVector.Aoba
 		{
 			if (Settings.PlaySounds && Settings.SoundFailed)
 			{
-				_failedSound.Stop();
-				_failedSound.Play();
+				try
+				{
+					_failedSound.Stop();
+					_failedSound.Play();
+				}catch
+				{ }
 			}
 			if (Settings.ShowToasts && Settings.ToastFailed)
 			{
@@ -342,14 +379,14 @@ namespace LuminousVector.Aoba
 		}
 #endregion
 
-		internal async static Task Login()
+		internal static async Task Login()
 		{
 			var token = await _authUri.AppendPathSegment("login").PostJsonAsync(new { Username = Settings.Username, Password = Settings.Password, AuthMode = "API" }).ReceiveJson<AuthToken>();
 			Settings.AuthToken = token.ApiKey;
 			CreateCookie();
 		}
 
-		internal async static Task UpdateStats()
+		internal static async Task UpdateStats()
 		{
 			try
 			{
@@ -386,6 +423,7 @@ namespace LuminousVector.Aoba
 		{
 			TrayIcon.Dispose();
 			KeyHandler.Dispose();
+			_uploadShellWatcher.Dispose();
 			//_inst?.Uninstall(_stateSaver);
 		}
 	}

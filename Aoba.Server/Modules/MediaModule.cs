@@ -43,11 +43,11 @@ namespace LuminousVector.Aoba.Server.Modules
 							try
 							{
 								var file = TagLib.File.Create(uri);
-								return View["audio.cshtml", new { rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext, title = file.Tag.Title, artist = file.Tag.FirstPerformer, album = file.Tag.Album }];
+								return View["audio.cshtml", new { id = p.id, rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext, title = file.Tag.Title, artist = (file.Tag.FirstPerformer ?? file.Tag.AlbumArtists.First()), album = file.Tag.Album }];
 							}
 							catch(TagLib.UnsupportedFormatException)
 							{
-								return View["audio.cshtml", new { rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext }];
+								return View["audio.cshtml", new { id = p.id, rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext }];
 							}
 						//Video
 						case MediaType.Video:
@@ -60,13 +60,59 @@ namespace LuminousVector.Aoba.Server.Modules
 				}
 			};
 
+			Get["/{id}/og"] = p =>
+			{
+				var media = Aoba.GetMedia((string)p.id);
+				if (media == null)
+				{
+					return new Response { StatusCode = HttpStatusCode.NotFound };
+				}
+				else
+				{
+					if (string.IsNullOrWhiteSpace(media.uri))
+						return new Response { StatusCode = HttpStatusCode.NotFound };
+					string uri = $"{Aoba.MEDIA_DIR}{media.uri}";
+					string ext = Path.GetExtension(media.uri).ToLower();
+					switch (media.type)
+					{
+						//Image
+						case MediaType.Image:
+							return Response.FromStream(File.OpenRead(uri), MimeTypes.GetMimeType(uri));
+						//Text
+						case MediaType.Text:
+							return new NotFoundResponse();
+						//Code
+						case MediaType.Code:
+							return new NotFoundResponse();
+						//Audio
+						case MediaType.Audio:
+							try
+							{
+								var file = TagLib.File.Create(uri);
+								if (file.Tag.Pictures.Length == 0)
+									return new NotFoundResponse();
+								return Response.FromStream(new MemoryStream(file.Tag.Pictures.First().Data.Data), "image/png");
+							}
+							catch (TagLib.UnsupportedFormatException)
+							{
+								return new NotFoundResponse();
+							}
+						//Video
+						case MediaType.Video:
+							return new NotFoundResponse();
+						default:
+							return Response.AsRedirect($"/i/raw/{(string)p.id}{ext}");
+					}
+				}
+			};
+
 			Get["/raw/{id}.{ext}"] = p =>
 			{
 				var media = Aoba.GetMedia((string)p.id);
 				string uri = $"{Aoba.MEDIA_DIR}{media.uri}";
 				if (media == null)
 				{
-					return new Response { StatusCode = HttpStatusCode.NotFound };
+					return new NotFoundResponse();
 				}
 				else
 				{
@@ -76,7 +122,7 @@ namespace LuminousVector.Aoba.Server.Modules
 
 			Get["/"] = _ =>
 			{
-				return new Response { StatusCode = HttpStatusCode.NotFound };
+				return new NotFoundResponse();
 			};
 		}
 	}

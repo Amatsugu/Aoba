@@ -39,6 +39,9 @@ namespace LuminousVector.Aoba
 		{
 			InitializeComponent();
 			Aoba.Init();
+			//Start in Tray
+			if (Aoba.Settings.StartInTray)
+				Hide();
 			if(!Aoba.Settings.HasAuth)
 			{
 				User.Focus();

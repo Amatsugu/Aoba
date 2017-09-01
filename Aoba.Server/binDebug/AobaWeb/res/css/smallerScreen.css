@@ -1,0 +1,17 @@
+
+#windowWrapper #window
+{
+	width: 100%;
+	border-radius: 0px;
+}
+
+#player
+{
+	grid-template-columns: auto;
+	grid-template-rows: 300px auto 80px;
+	grid-template-areas:  "art"
+							"info"
+							"controls";
+	height: auto;
+	width: 100%;
+}

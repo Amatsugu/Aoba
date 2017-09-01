@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="RIDER_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$/../..">
+      <sourceFolder url="file://$MODULE_DIR$/../../Aoba" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../Aoba.Server" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../Aoba.ShellExtensions" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../DataStore" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/../../Aoba.Server/binDebug" />
+      <excludeFolder url="file://$MODULE_DIR$/../../Aoba.Server/obj" />
+      <excludeFolder url="file://$MODULE_DIR$/../../Aoba.ShellExtensions/bin" />
+      <excludeFolder url="file://$MODULE_DIR$/../../Aoba.ShellExtensions/obj" />
+      <excludeFolder url="file://$MODULE_DIR$/../../Aoba/bin" />
+      <excludeFolder url="file://$MODULE_DIR$/../../Aoba/obj" />
+      <excludeFolder url="file://$MODULE_DIR$/../../DataStore/bin" />
+      <excludeFolder url="file://$MODULE_DIR$/../../DataStore/obj" />
+      <excludeFolder url="file://$MODULE_DIR$/../../packages" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

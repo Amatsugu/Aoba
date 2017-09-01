@@ -5,9 +5,14 @@
 		<title>
 			@{
 				string head = "";
+				string t, a, al;
+				t = a = al = "";
 				try
 				{
-					 head = " | " + Model.title + " - " + Model.artist;
+					t = @Model.title;
+					a = @Model.artist;
+					al = @Model.album;
+					head = " | " + Model.title + " - " + Model.artist;
 				}catch(Exception)
 				{
 				}
@@ -19,6 +24,13 @@
 		<link rel="stylesheet" href="/res/css/main.css"/>
 		<link rel="stylesheet" href="/res/css/window.css"/>
 		<link rel="stylesheet" href="/res/css/audioPlayer.css"/>
+		<meta name="descripton" content="@head">
+		<meta property="og:title" content="@t" />
+		<meta property="og:type" content="music.song" />
+		<meta property="og:url" content="https://aobacapture.com/i/@Model.id" />
+		<meta property="og:image" content="https://aobacapture.com/i/@Model.id/og" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" type="text/css" href="/res/css/smallerScreen.css" media="only screen and (max-width: 500px)">
 		<script src="/res/js/jquery-3.1.1.min.js"></script>
 		<script src="/res/js/aurora.js" type="text/javascript"></script>
 		<script src="/res/js/flac.js" type="text/javascript"></script>
@@ -38,18 +50,6 @@
 					</div>
 					<div id="loadProgress"></div>
 					<div id="info">
-						@{
-							string t, a, al;
-							t = a = al = "";
-							try
-							{
-								t = @Model.title;
-								a = @Model.artist;
-								al = @Model.album;
-							}catch(Exception)
-							{
-							}
-						}
 						<div id="title">@t</div>
 						<div id="artist">@a</div>
 						<div id="album">@al</div>
