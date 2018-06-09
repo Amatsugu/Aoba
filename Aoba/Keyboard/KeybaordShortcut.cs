@@ -13,7 +13,7 @@ namespace LuminousVector.Aoba.Keyboard
 		[JsonProperty]
 		public string Name { get; private set; }
 		[JsonIgnore]
-		public string Key { get { return _key.ToString(); } }
+		public Keys Key => _key;
 		[JsonIgnore]
 		public string Modifiers
 		{
@@ -27,6 +27,8 @@ namespace LuminousVector.Aoba.Keyboard
 		}
 		[JsonIgnore]
 		private string modifiers;
+
+		public ModifierKeys ModKeys => ((_alt ? ModifierKeys.Alt : 0) | (_shift ? ModifierKeys.Shift : 0) | (_ctrl ? ModifierKeys.Control : 0));
 
 		[JsonProperty]
 		private Keys _key;
@@ -52,5 +54,7 @@ namespace LuminousVector.Aoba.Keyboard
 		}
 
 		internal bool IsCurrent(KeyEventArgs e) => (e.Alt == _alt && e.Shift == _shift && e.Control == _ctrl && e.KeyCode == _key);
+
+		internal bool IsCurrent(ModifierKeys modifiers, Keys key) => (ModKeys == modifiers) && (key == _key);
 	}
 }

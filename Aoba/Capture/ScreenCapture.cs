@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -26,6 +27,12 @@ namespace LuminousVector.Aoba.Capture
 			}
 			return screenCap;
 		}
+
+		[DllImport("user32.dll")]
+		public static extern IntPtr GetForegroundWindow();
+
+		[DllImport("user32.dll")]
+		public static extern bool GetWindowRect(IntPtr hWnd, out WindowRect lpRect);
 
 		private static Bitmap CaptureScreen(Screen screen)
 		{

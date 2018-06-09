@@ -8,6 +8,7 @@ using System.Linq;
 using System.Media;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Threading;
@@ -137,11 +138,10 @@ namespace LuminousVector.Aoba
 			//Shortcuts
 			ResolveKeys();
 			KeyHandler = new KeyHandler();
-			KeyHandler.RegisterEventTarget("Capture Window", null);
+			KeyHandler.RegisterEventTarget("Capture Window", CaptureWindow);
 			KeyHandler.RegisterEventTarget("Capture Fullscreen", CaptureFullscreenAndSave);
-			KeyHandler.RegisterEventTarget("Capture Region", BeginCapture);
+			KeyHandler.RegisterEventTarget("Capture Region", BeginRegionCapture);
 			KeyHandler.RegisterEventTarget("Upload File", ShowUploadWindow);
-
 			//Region Capture
 			RegisterRegionCapture();
 
@@ -220,10 +220,10 @@ namespace LuminousVector.Aoba
 		{
 			
 		}
-#endregion
+		#endregion
 
-#region Capture
-		private static void BeginCapture()
+		#region Capture Region
+		private static void BeginRegionCapture()
 		{
 			if (!_capturingRect)
 			{
@@ -248,12 +248,12 @@ namespace LuminousVector.Aoba
 				return;
 			Image screenCap = ScreenCapture.CaptureRegion(region);
 			if (Settings.ShowToasts && Settings.ToastCapture)
-			{
 				Notify("Screenshot Captured");
-			}
 			PublishScreen(screenCap);
 		}
+		#endregion
 
+		#region Capture Fullscreen
 		private static void CaptureFullscreenAndSave()
 		{
 			Image screenCap = null;
@@ -280,6 +280,19 @@ namespace LuminousVector.Aoba
 			}
 			PublishScreen(screenCap);
 		}
+		#endregion
+
+		#region Capture Window
+		public static void CaptureWindow()
+		{
+			ScreenCapture.GetWindowRect(ScreenCapture.GetForegroundWindow(), out WindowRect rect);
+			var screenCap = ScreenCapture.CaptureRegion(rect.AsRectange());
+			if (Settings.ShowToasts && Settings.ToastCapture)
+				Notify("Screenshot Captured");
+			PublishScreen(screenCap);
+		}
+		#endregion
+
 
 		private static async void PublishScreen(Image screenCap)
 		{
@@ -308,7 +321,6 @@ namespace LuminousVector.Aoba
 				}
 			}
 		}
-#endregion
 
 		private static void ShowUploadWindow()
 		{

@@ -6,13 +6,22 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Gma.System.MouseKeyHook;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace LuminousVector.Aoba.Keyboard
 {
-	public sealed class KeyHandler : IDisposable
+	[Flags]
+	public enum ModifierKeys : uint
 	{
-		public event KeyEventHandler KeyDown { add { _globalHook.KeyDown += value; } remove { _globalHook.KeyDown -= value; } }
-		public event KeyEventHandler KeyUp { add { _globalHook.KeyUp += value; } remove { _globalHook.KeyUp -= value; } }
+		Alt = 1,
+		Control = 2,
+		Shift = 4,
+		Win = 8
+	}
+	public sealed class KeyHandler : NativeWindow, IDisposable
+	{
+		public event System.Windows.Forms.KeyEventHandler KeyDown { add { _globalHook.KeyDown += value; } remove { _globalHook.KeyDown -= value; } }
+		public event System.Windows.Forms.KeyEventHandler KeyUp { add { _globalHook.KeyUp += value; } remove { _globalHook.KeyUp -= value; } }
 		public event EventHandler<MouseEventExtArgs> DragStart { add { _globalHook.MouseDragStartedExt += value; } remove { _globalHook.MouseDragStartedExt -= value; } }
 		public event EventHandler<MouseEventExtArgs> MouseDown { add { _globalHook.MouseDownExt += value; } remove { _globalHook.MouseDownExt -= value; } }
 		public event EventHandler<MouseEventExtArgs> MouseUp { add { _globalHook.MouseUpExt += value; } remove { _globalHook.MouseUpExt -= value; } }
@@ -23,14 +32,45 @@ namespace LuminousVector.Aoba.Keyboard
 		//private IKeyboardMouseEvents _mouseHook;
 		private Dictionary<string, Action> _eventTargets;
 		private List<KeybaordShortcut> _shortcuts;
-		private bool _allowNextPress = true;
+		private int _curID = 0;
+
+		private static readonly int WM_HOTKEY = 0x0312;
+
+		[DllImport("user32.dll")]
+		private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+		// Unregisters the hot key with Windows.
+		[DllImport("user32.dll")]
+		private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
 
 		public KeyHandler()
 		{
 			_globalHook	= Hook.GlobalEvents();
-			Subscribe();
+			this.CreateHandle(new CreateParams());
 			_shortcuts = Aoba.Settings.Shortcuts;
+			RegisterHotkeys();
 			_eventTargets = new Dictionary<string, Action>();
+		}
+
+		private void RegisterHotkeys()
+		{
+			foreach (KeybaordShortcut s in _shortcuts)
+			{
+				RegisterHotKey(Handle, _curID++, (uint)s.ModKeys, (uint)s.Key);
+			}
+		}
+
+		protected override void WndProc(ref Message m)
+		{
+			base.WndProc(ref m);
+
+			if (m.Msg == WM_HOTKEY)
+			{
+				Keys key = (Keys)(((int)m.LParam >> 16) & 0xFFFF);
+				ModifierKeys modifier = (ModifierKeys)((int)m.LParam & 0xFFFF);
+
+				CheckKey(modifier, key);
+			}
 		}
 
 		public void RegisterEventTarget(string shortcutName, Action target)
@@ -41,34 +81,17 @@ namespace LuminousVector.Aoba.Keyboard
 				_eventTargets.Add(shortcutName, target);
 		}
 
-		public void Subscribe()
-		{
-			_globalHook.KeyDown += CheckKey;
-			_globalHook.KeyUp += KeyRelease;
-		}
 
-		public void UnSubscribe()
-		{
-			_globalHook.KeyDown -= CheckKey;
-			_globalHook.KeyUp -= KeyRelease;
-		}
-
-		private void KeyRelease(object sender, KeyEventArgs e) => _allowNextPress = true;
-
-		private void CheckKey(object sender, KeyEventArgs e)
+		private void CheckKey(ModifierKeys modifiers, Keys key)
 		{
 			if (!IsListening)
 				return;
-			if (!_allowNextPress)
-				return;
 			foreach(KeybaordShortcut s in _shortcuts)
 			{
-				if(s.IsCurrent(e))
+				if(s.IsCurrent(modifiers, key))
 				{
 					if (_eventTargets.ContainsKey(s.Name))
 						_eventTargets[s.Name]?.Invoke();
-					e.Handled = true;
-					_allowNextPress = false;
 				}
 			}
 		}
@@ -82,11 +105,13 @@ namespace LuminousVector.Aoba.Keyboard
 			{
 				if (disposing)
 				{
-					UnSubscribe();
+					for (int i = _curID; i > 0; i--)
+					{
+						UnregisterHotKey(Handle, i);
+					}
+					base.ReleaseHandle();
 					_globalHook.Dispose();
 				}
-
-
 				disposedValue = true;
 			}
 		}
