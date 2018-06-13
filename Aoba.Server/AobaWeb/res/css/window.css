@@ -17,6 +17,7 @@
 {
 	background: url("../img/BG.jpg");
 	background-position: right;
+	background-size: cover;
 	position: relative;
 	top: 0px;
 	left: 0px;
