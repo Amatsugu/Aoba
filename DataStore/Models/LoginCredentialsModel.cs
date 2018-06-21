@@ -1,6 +1,6 @@
 using System;
 
-namespace LuminousVector.Aoba.Server.Models
+namespace LuminousVector.Aoba.Models
 {
 	public enum AuthMode
 	{

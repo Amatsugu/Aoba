@@ -18,14 +18,12 @@ namespace LuminousVector.Aoba.Models
 			Raw
 		}
 
+		public string id;
 		public string uri;
 		public MediaType type;
-
-		public MediaModel(string uri, MediaType type = MediaType.Image)
-		{
-			this.uri = uri;
-			this.type = type;
-		}
+		public byte[] media;
+		public Stream mediaStream;
+		public string ext;
 
 
 		private static readonly Dictionary<string, MediaType> AllowedFiles = new Dictionary<string, MediaType>()

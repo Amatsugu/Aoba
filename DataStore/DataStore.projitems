@@ -5,10 +5,14 @@
     <HasSharedItems>true</HasSharedItems>
     <SharedGUID>a5ca15c1-fbf9-47e9-b71d-4b390ec4f8db</SharedGUID>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" />
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>LuminousVector.Aoba.Models</Import_RootNamespace>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)DataStore\AuthToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataStore\UserStatsModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\LoginCredentialsModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\MediaModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\UserModel.cs" />
   </ItemGroup>
 </Project>

@@ -15,7 +15,7 @@ namespace LuminousVector.Aoba.Server.Models
 		public IUserIdentity GetUserFromIdentifier(Guid identifier, NancyContext context)
 		{
 			Console.WriteLine(context.Request.Form.username);
-			return Aoba.GetUserFromApiKey(identifier.ToString());
+			return AobaCore.GetUserFromApiKey(identifier.ToString());
 		}
 	}
 }

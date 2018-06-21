@@ -10,7 +10,7 @@ namespace LuminousVector.Aoba.Server.Modules
 	{
 		public IndexModule() : base("/")
 		{
-			StatelessAuthentication.Enable(this, Aoba.StatelessConfig);
+			StatelessAuthentication.Enable(this, AobaCore.StatelessConfig);
 			this.RequiresAuthentication();
 			Get["/"] = p =>
 			{

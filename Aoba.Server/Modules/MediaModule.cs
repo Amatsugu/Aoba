@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Nancy;
 using static LuminousVector.Aoba.Models.MediaModel;
 using Nancy.Responses;
+using LuminousVector.Aoba.Server.DataStore;
 
 namespace LuminousVector.Aoba.Server.Modules
 {
@@ -16,42 +17,41 @@ namespace LuminousVector.Aoba.Server.Modules
 		{
 			Get["/{id}"] = p =>
 			{
-				var media = Aoba.GetMedia((string)p.id);
+				var media = AobaCore.GetMedia((string)p.id);
 				if(media == null)
 				{
 					return new Response { StatusCode = HttpStatusCode.NotFound };
 				}else
 				{
-					if (string.IsNullOrWhiteSpace(media.uri))
+					if (media.mediaStream == null || media.mediaStream.Length <= 0)
 						return new Response { StatusCode = HttpStatusCode.NotFound };
-					string uri = $"{Aoba.MEDIA_DIR}{media.uri}";
-					string ext = Path.GetExtension(media.uri).ToLower();
+					string ext = media.ext;
 					switch (media.type)
 					{
 						//Image
 						case MediaType.Image:
-							return Response.FromStream(File.OpenRead(uri), MimeTypes.GetMimeType(uri));
+							return Response.FromStream(media.mediaStream, MimeTypes.GetMimeType(ext));
 						//Text
 						case MediaType.Text:
-							return Response.FromStream(File.OpenRead(uri), "text/plain");
+							return Response.FromStream(media.mediaStream, "text/plain");
 						//Code
 						case MediaType.Code:
-							return Response.FromStream(File.OpenRead(uri), "text/plain"); // TODO: Code View
+							return Response.FromStream(media.mediaStream, "text/plain"); // TODO: Code View
 							//return View["code.cshtml", new { code = File.ReadAllText(uri) }];
 						//Audio
 						case MediaType.Audio:
 							try
 							{
-								var file = TagLib.File.Create(uri);
-								return View["audio.cshtml", new { id = p.id, rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext, title = file.Tag.Title, artist = (file.Tag.FirstPerformer ?? file.Tag.AlbumArtists.First()), album = file.Tag.Album }];
+								var file = TagLib.File.Create(new FileStreamAbstraction($"{media.id}{ext}", media.mediaStream));
+								return View["audio.cshtml", new { p.id, rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext, title = file.Tag.Title, artist = (file.Tag.FirstPerformer ?? file.Tag.AlbumArtists.First()), album = file.Tag.Album }];
 							}
 							catch(TagLib.UnsupportedFormatException)
 							{
-								return View["audio.cshtml", new { id = p.id, rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext }];
+								return View["audio.cshtml", new { p.id, rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext }];
 							}
 						//Video
 						case MediaType.Video:
-							return Response.FromStream(File.OpenRead(uri), MimeTypes.GetMimeType(media.uri)); // TODO: Video player
+							return Response.FromStream(media.mediaStream, MimeTypes.GetMimeType(media.ext)); // TODO: Video player
 							//return View["video.cshtml", new { rawUri = $"/i/raw/{(string)p.id}{ext}", format = Path.GetExtension(media.uri).ToLower() }];
 						//Raw
 						default:
@@ -62,22 +62,19 @@ namespace LuminousVector.Aoba.Server.Modules
 
 			Get["/{id}/og"] = p =>
 			{
-				var media = Aoba.GetMedia((string)p.id);
+				var media = AobaCore.GetMedia((string)p.id);
 				if (media == null)
-				{
 					return new Response { StatusCode = HttpStatusCode.NotFound };
-				}
 				else
 				{
-					if (string.IsNullOrWhiteSpace(media.uri))
+					if (media.mediaStream == null || media.mediaStream.Length <= 0)
 						return new Response { StatusCode = HttpStatusCode.NotFound };
-					string uri = $"{Aoba.MEDIA_DIR}{media.uri}";
-					string ext = Path.GetExtension(media.uri).ToLower();
+					string ext = media.ext;
 					switch (media.type)
 					{
 						//Image
 						case MediaType.Image:
-							return Response.FromStream(File.OpenRead(uri), MimeTypes.GetMimeType(uri));
+							return Response.FromStream(media.mediaStream, MimeTypes.GetMimeType(ext));
 						//Text
 						case MediaType.Text:
 							return new NotFoundResponse();
@@ -88,7 +85,7 @@ namespace LuminousVector.Aoba.Server.Modules
 						case MediaType.Audio:
 							try
 							{
-								var file = TagLib.File.Create(uri);
+								var file = TagLib.File.Create(new FileStreamAbstraction($"{media.id}{ext}", media.mediaStream));
 								if (file.Tag.Pictures.Length == 0)
 									return new NotFoundResponse();
 								return Response.FromStream(new MemoryStream(file.Tag.Pictures.First().Data.Data), "image/png");
@@ -108,16 +105,11 @@ namespace LuminousVector.Aoba.Server.Modules
 
 			Get["/raw/{id}.{ext}"] = p =>
 			{
-				var media = Aoba.GetMedia((string)p.id);
-				string uri = $"{Aoba.MEDIA_DIR}{media.uri}";
+				var media = AobaCore.GetMedia((string)p.id);
 				if (media == null)
-				{
 					return new NotFoundResponse();
-				}
 				else
-				{
-					return Response.FromStream(File.OpenRead(uri), MimeTypes.GetMimeType(uri));
-				}
+					return Response.FromStream(media.mediaStream, MimeTypes.GetMimeType(media.ext));
 			};
 
 			Get["/"] = _ =>

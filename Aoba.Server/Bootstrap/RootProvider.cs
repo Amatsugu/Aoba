@@ -1,6 +1,7 @@
 ﻿using Nancy;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,8 @@ namespace LuminousVector.Aoba.Server.Bootstrap
 	{
 		public string GetRootPath()
 		{
-			return @"C:\Users\Karuta\Documents\GitHub\Aoba\Aoba.Server";
+			var curDir = Directory.GetCurrentDirectory();
+			return curDir.Replace(@"bin\Debug", "");
 		}
 	}
 #endif

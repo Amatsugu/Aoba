@@ -14,12 +14,12 @@ namespace LuminousVector.Aoba.Server.Modules
 	{
 		public APIModule() : base("/api")
 		{
-			StatelessAuthentication.Enable(this, Aoba.StatelessConfig);
+			StatelessAuthentication.Enable(this, AobaCore.StatelessConfig);
 			this.RequiresAuthentication();
 			
 			Get["/userStats"] = _ =>
 			{
-				return Response.AsJson(Aoba.GetUserStats(((UserModel)Context.CurrentUser).ID));
+				return Response.AsJson(AobaCore.GetUserStats(((UserModel)Context.CurrentUser).ID));
 			};
 
 			Get["/"] = _ =>
@@ -29,19 +29,28 @@ namespace LuminousVector.Aoba.Server.Modules
 
 			Post["/image"] = p =>
 			{
-				if (!Directory.Exists(Aoba.MEDIA_DIR))
-					Directory.CreateDirectory(Aoba.MEDIA_DIR);
+				if (!Directory.Exists(AobaCore.MEDIA_DIR))
+					Directory.CreateDirectory(AobaCore.MEDIA_DIR);
 				try
 				{
 					var f = Context.Request.Files.First();
-					string fileNmae = $"{Aoba.GetNewID()}{Path.GetExtension(f.Name)}";
-					Console.WriteLine($"File Recieved name:[{fileNmae}]");
-					using (FileStream file = new FileStream($"{Aoba.MEDIA_DIR}/{fileNmae}", FileMode.CreateNew))
+					string fileName = $"{AobaCore.GetNewID()}{Path.GetExtension(f.Name)}";
+					Console.WriteLine($"File Recieved name:[{fileName}]");
+					//using (FileStream file = new FileStream($"{AobaCore.MEDIA_DIR}/{fileNmae}", FileMode.CreateNew))
+					//{
+						//f.Value.CopyTo(file);
+						//file.Flush();
+					//}
+					var media = new MediaModel
 					{
-						f.Value.CopyTo(file);
-						file.Flush();
-					}
-					return Aoba.AddMedia(((UserModel)Context.CurrentUser).ID, new MediaModel($"/{fileNmae}", (MediaModel.MediaType)Enum.Parse(typeof(MediaModel.MediaType), f.ContentType)));
+						//uri = $"/{fileNmae}",
+						type = (MediaModel.MediaType)Enum.Parse(typeof(MediaModel.MediaType), f.ContentType),
+						mediaStream = f.Value,
+						ext = Path.GetExtension(fileName)
+					};
+					media.mediaStream.Position = 0;
+					//f.Value.Read(media.media, 0, (int)f.Value.Length);
+					return AobaCore.AddMedia(((UserModel)Context.CurrentUser).ID, media);
 				}
 				catch(Exception e)
 				{

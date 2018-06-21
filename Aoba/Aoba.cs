@@ -393,7 +393,7 @@ namespace LuminousVector.Aoba
 
 		internal static async Task Login()
 		{
-			var token = await _authUri.AppendPathSegment("login").PostJsonAsync(new { Username = Settings.Username, Password = Settings.Password, AuthMode = "API" }).ReceiveJson<AuthToken>();
+			var token = await _authUri.AppendPathSegment("login").PostJsonAsync(new { Settings.Username, Settings.Password, AuthMode = "API" }).ReceiveJson<AuthToken>();
 			Settings.AuthToken = token.ApiKey;
 			CreateCookie();
 		}

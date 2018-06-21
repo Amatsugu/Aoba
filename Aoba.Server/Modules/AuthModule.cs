@@ -5,8 +5,8 @@ using Nancy.Authentication.Forms;
 using Nancy.ModelBinding;
 using Nancy.ModelBinding.DefaultBodyDeserializers;
 using Nancy.ModelBinding.DefaultConverters;
-using LuminousVector.Aoba.Server.Models;
 using LuminousVector.Aoba.Server.Credentials;
+using LuminousVector.Aoba.Models;
 
 namespace LuminousVector.Aoba.Server.Modules
 {
@@ -19,7 +19,7 @@ namespace LuminousVector.Aoba.Server.Modules
 				LoginCredentialsModel user = this.Bind<LoginCredentialsModel>();
 				if (user == null)
 					return new Response { StatusCode = HttpStatusCode.Unauthorized };
-				string apiKey = Aoba.ValidateUser(user);
+				string apiKey = AobaCore.ValidateUser(user);
 				if (apiKey == null)
 					return new Response { StatusCode = HttpStatusCode.Unauthorized };
 				if (user.AuthMode == AuthMode.API)
@@ -36,7 +36,7 @@ namespace LuminousVector.Aoba.Server.Modules
 			Post["/register/{token}"] = p =>
 			{
 				LoginCredentialsModel user = this.Bind<LoginCredentialsModel>();
-				if (Aoba.RegisterUser(user, (string)p.token))
+				if (AobaCore.RegisterUser(user, (string)p.token))
 				{
 					return new Response { StatusCode = HttpStatusCode.OK };
 				}
@@ -46,7 +46,7 @@ namespace LuminousVector.Aoba.Server.Modules
 
 			Post["/checkuser"] = p =>
 			{
-				return (Aoba.CheckUserExists(Request.Body.AsString())) ? new Response { StatusCode = HttpStatusCode.NotAcceptable } : new Response { StatusCode = HttpStatusCode.OK };
+				return (AobaCore.UserExists(Request.Body.AsString())) ? new Response { StatusCode = HttpStatusCode.NotAcceptable } : new Response { StatusCode = HttpStatusCode.OK };
 			};
 
 
