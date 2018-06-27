@@ -31,7 +31,18 @@ namespace LuminousVector.Aoba.Server.Bootstrap
 			{
 				return string.Concat("AobaWeb/", viewName);
 			});
+
+#if DEBUG
+			pipelines.AfterRequest += AfterRequest;
+#endif
 		}
+
+#if DEBUG
+		private void AfterRequest(NancyContext context)
+		{
+			Console.WriteLine(context.Request.UserHostAddress);
+		}
+#endif
 
 #if DEBUG
 		protected override IRootPathProvider RootPathProvider

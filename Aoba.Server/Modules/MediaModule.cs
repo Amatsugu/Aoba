@@ -19,13 +19,13 @@ namespace LuminousVector.Aoba.Server.Modules
 			{
 				var media = AobaCore.GetMedia((string)p.id);
 				if(media == null)
-				{
-					return new Response { StatusCode = HttpStatusCode.NotFound };
-				}else
+					return new NotFoundResponse();
+				else
 				{
 					if (media.mediaStream == null || media.mediaStream.Length <= 0)
-						return new Response { StatusCode = HttpStatusCode.NotFound };
+						return new NotFoundResponse();
 					string ext = media.ext;
+					AobaCore.IncrementViewCount(media.id);
 					switch (media.type)
 					{
 						//Image
@@ -64,11 +64,11 @@ namespace LuminousVector.Aoba.Server.Modules
 			{
 				var media = AobaCore.GetMedia((string)p.id);
 				if (media == null)
-					return new Response { StatusCode = HttpStatusCode.NotFound };
+					return new NotFoundResponse();
 				else
 				{
 					if (media.mediaStream == null || media.mediaStream.Length <= 0)
-						return new Response { StatusCode = HttpStatusCode.NotFound };
+						return new NotFoundResponse();
 					string ext = media.ext;
 					switch (media.type)
 					{
@@ -112,10 +112,10 @@ namespace LuminousVector.Aoba.Server.Modules
 					return Response.FromStream(media.mediaStream, MimeTypes.GetMimeType(media.ext));
 			};
 
-			Get["/"] = _ =>
-			{
-				return new NotFoundResponse();
-			};
+			//Get["/"] = _ =>
+			//{
+				//return new NotFoundResponse();
+			//};
 		}
 	}
 }

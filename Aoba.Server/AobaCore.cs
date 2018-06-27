@@ -272,7 +272,8 @@ namespace LuminousVector.Aoba.Server
 				{ "type", media.type },
 				{ "media", GridFS.UploadFromStream(media.id, media.mediaStream) },
 				{ "ext", media.ext },
-				{ "owner", userId }
+				{ "owner", userId },
+				{ "views", 0 }
 			});
 			return $"{HOST}/i/{media.id}";
 		}
@@ -304,6 +305,12 @@ namespace LuminousVector.Aoba.Server
 		{
 			screenShotCount = (int)Media.Count("{ owner : '" + userid + "'}")
 		};
+
+		internal static void IncrementViewCount(string id)
+		{
+			id = Uri.EscapeUriString(id);
+			Media.UpdateOne("{ id : '" + id + "'}", "{ $inc: { views : 1 } }");
+		}
 
 		internal static string GetNewID() => Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("=", "").Replace("/", "_").Replace(@"\", ".");
 
