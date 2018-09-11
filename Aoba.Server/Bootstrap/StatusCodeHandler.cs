@@ -16,7 +16,10 @@ namespace LuminousVector.Aoba.Server.Bootstrap
 		private readonly HttpStatusCode[] _handledCodes = new HttpStatusCode[] 
 		{
 			HttpStatusCode.NotFound,
-			HttpStatusCode.Unauthorized
+			HttpStatusCode.Unauthorized,
+#if !DEBUG
+			HttpStatusCode.InternalServerError
+#endif
 		};
 
 		private IViewRenderer viewRenderer;
@@ -37,7 +40,7 @@ namespace LuminousVector.Aoba.Server.Bootstrap
 			{
 				context.Response = viewRenderer.RenderView(context, "error", new
 				{
-					statusCode = statusCode,
+					statusCode,
 					message = StatusCodeMessages.GetMessage(statusCode)
 				});
 				context.Response.StatusCode = statusCode;

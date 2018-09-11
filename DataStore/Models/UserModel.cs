@@ -17,11 +17,6 @@ namespace LuminousVector.Aoba.Models
 		public string UserName { get; }
 		public string ID { get; }
 
-		public List<string> apiKeys;
-		public List<string> regTokens;
-		public List<MediaModel> media;
-		public string passHash;
-
 		public IEnumerable<string> Claims { get; }
 
 		public UserModel(string username, string id, IEnumerable<string> claims = null)

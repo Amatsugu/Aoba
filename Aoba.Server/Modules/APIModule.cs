@@ -35,7 +35,6 @@ namespace LuminousVector.Aoba.Server.Modules
 				{
 					var f = Context.Request.Files.First();
 					string fileName = $"{AobaCore.GetNewID()}{Path.GetExtension(f.Name)}";
-					Console.WriteLine($"File Recieved name:[{fileName}]");
 					//using (FileStream file = new FileStream($"{AobaCore.MEDIA_DIR}/{fileNmae}", FileMode.CreateNew))
 					//{
 						//f.Value.CopyTo(file);
@@ -52,9 +51,8 @@ namespace LuminousVector.Aoba.Server.Modules
 					//f.Value.Read(media.media, 0, (int)f.Value.Length);
 					return AobaCore.AddMedia(((UserModel)Context.CurrentUser).ID, media);
 				}
-				catch(Exception e)
+				catch
 				{
-					Console.WriteLine($"Upload Failed: {e.Message}");
 					return new Response() { StatusCode = HttpStatusCode.ImATeapot};
 				}
 			};

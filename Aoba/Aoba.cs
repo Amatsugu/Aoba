@@ -21,6 +21,8 @@ using LuminousVector.Aoba.Models;
 using LuminousVector.Aoba.Net;
 using Clipboard = System.Windows.Clipboard;
 using Timer = System.Threading.Timer;
+using Capture;
+using Capture.Interface;
 
 namespace LuminousVector.Aoba
 {
@@ -41,6 +43,8 @@ namespace LuminousVector.Aoba
 				_isListening = KeyHandler.IsListening = value;
 			}
 		}
+
+		public static CaptureConfig d3dCapConfig;
 
 
 		private static string _apiUri = "https://aobacapture.com/api";
@@ -70,13 +74,21 @@ namespace LuminousVector.Aoba
 		private static MemoryMappedFile _mFile;
 		private static Timer _uploadShellWatcher;
 		private static Dispatcher _aobaDispatcher;
+		private static CaptureProcess _curHook;
 
 		internal static void Init()
 		{
+			//D3D Capture
+			d3dCapConfig = new CaptureConfig
+			{
+				Direct3DVersion = Direct3DVersion.AutoDetect,
+				ShowOverlay = false
+			};
+
 			//Settings
 			try
 			{
-				_settings = File.Exists("settings.json") ? Settings.Load("Settings.json") : Settings.Default;
+				_settings = File.Exists("settings.json") ? Settings.Load("Settings.json") ?? Settings.Default : Settings.Default;
 			}catch(Exception e)
 			{
 				_settings = Settings.Default;
@@ -94,7 +106,7 @@ namespace LuminousVector.Aoba
 				var a = Assembly.GetExecutingAssembly();
 				_successSound = new SoundPlayer(a.GetManifestResourceStream("LuminousVector.Aoba.res.success.wav"));
 				_successSound.Load();
-				_failedSound = new SoundPlayer(a.GetManifestResourceStream("LuminousVector.Aoba.res.failed.wav"));
+				_failedSound = new SoundPlayer(a.GetManifestResourceStream("LuminousVector.Aoba.res.failed.mp3"));
 				_failedSound.Load();
 
 			}
@@ -285,18 +297,52 @@ namespace LuminousVector.Aoba
 		#region Capture Window
 		public static void CaptureWindow()
 		{
+			var process = Process.GetProcessById(ScreenCapture.GetForgroundWindowId());
 			ScreenCapture.GetWindowRect(ScreenCapture.GetForegroundWindow(), out WindowRect rect);
-			var screenCap = ScreenCapture.CaptureRegion(rect.AsRectange());
+			if (_curHook == null || _curHook.Process.Id != process.Id)
+			{
+				if(_curHook != null)
+					_curHook.Dispose();
+				_curHook = null;
+				var captureI = new CaptureInterface();
+				captureI.RemoteMessage += CaptureI_RemoteMessage;
+				try
+				{
+					_curHook = new CaptureProcess(process, d3dCapConfig, captureI);
+				}catch(Exception e)
+				{
+					_curHook = null;
+				}
+			}
+			Bitmap screenCap;
+			if(_curHook != null)
+			{
+				var capture = _curHook.CaptureInterface;
+				var res = capture.BeginGetScreenshot(rect.AsRectange(), new TimeSpan(0, 0, 10));
+				capture.EndGetScreenshot(res);
+				screenCap = capture.GetScreenshot().ToBitmap();
+				var pngCap = new MemoryStream();
+				screenCap.Save(pngCap, System.Drawing.Imaging.ImageFormat.Png);
+				screenCap = new Bitmap(pngCap);
+			}else
+			{
+				screenCap = ScreenCapture.CaptureRegion(rect.AsRectange());
+			}
 			if (Settings.ShowToasts && Settings.ToastCapture)
 				Notify("Screenshot Captured");
 			PublishScreen(screenCap);
+		}
+
+		private static void CaptureI_RemoteMessage(MessageReceivedEventArgs message)
+		{
+			
 		}
 		#endregion
 
 
 		private static async void PublishScreen(Image screenCap)
 		{
-			var ext = (Settings.Format == ImageFormat.Png) ? ".png" : ".jpg";
+			var ext = (Settings.Format == System.Drawing.Imaging.ImageFormat.Png) ? ".png" : ".jpg";
 			var fileName = $"{Guid.NewGuid().ToString().Replace("-", "")}{ext}";
 
 			if (Settings.SaveCopy)

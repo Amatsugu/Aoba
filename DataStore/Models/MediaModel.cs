@@ -19,9 +19,7 @@ namespace LuminousVector.Aoba.Models
 		}
 
 		public string id;
-		public string uri;
 		public MediaType type;
-		public byte[] media;
 		public Stream mediaStream;
 		public string ext;
 

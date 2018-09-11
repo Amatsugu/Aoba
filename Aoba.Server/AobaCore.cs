@@ -94,17 +94,8 @@ namespace LuminousVector.Aoba.Server
 
 		internal static StatelessAuthenticationConfiguration StatelessConfig { get; private set; } = new StatelessAuthenticationConfiguration(nancyContext =>
 		{
-			try
-			{
-				string ApiKey = nancyContext.Request.Cookies.First(c => c.Key == "ApiKey").Value;
-				Console.WriteLine($"API KEY: {ApiKey}");
+				string ApiKey = nancyContext.Request.Cookies.FirstOrDefault(c => c.Key == "ApiKey").Value;
 				return GetUserFromApiKey(ApiKey); 
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.Message);
-				return null;
-			}
 		});
 
 		internal static string HashPassword(string password)
@@ -143,6 +134,8 @@ namespace LuminousVector.Aoba.Server
 
 		internal static UserModel GetUserFromApiKey(string apiKey)
 		{
+			if (string.IsNullOrWhiteSpace(apiKey))
+				return null;
 			apiKey = Uri.EscapeDataString(apiKey);
 			//var user = Users.Find(u => u.GetValue("apiKeys").AsBsonArray.Contains(apiKey)).First();
 			var user = Users.Find("{ 'apiKeys' : '" + apiKey + "' }").First();
@@ -158,29 +151,6 @@ namespace LuminousVector.Aoba.Server
 			if (user.IsBsonNull)
 				return null;
 			return new UserModel(user.GetValue("username").AsString, user.GetValue("id").AsString, user.GetValue("claims").AsBsonArray.Select(c => c.AsString));
-		}
-
-		internal static void AddUsers(List<UserModel> users)
-		{
-			var userDocuments = users.Select(user => new BsonDocument
-			{
-				{ "username", Uri.UnescapeDataString(user.UserName) },
-				{ "id", user.ID },
-				{ "passHash", user.passHash },
-				{ "claims", new BsonArray(user.Claims ?? new string[0]) },
-				{ "apiKeys", new BsonArray(user.apiKeys) },
-				{ "regTokens", new BsonArray(user.regTokens) },
-			});
-			var mediaDocuments = users.SelectMany(user => user.media.Select(media => new BsonDocument
-			{
-				{ "id", media.id },
-				{ "type", media.type },
-				{ "media", GridFS.UploadFromBytes(media.id, media.media) },
-				{ "ext", media.ext },
-				{ "owner", user.ID },
-			}));
-			Users.InsertMany(userDocuments);
-			Media.InsertMany(mediaDocuments);
 		}
 
 		internal static string ValidateUser(LoginCredentialsModel login)
@@ -278,25 +248,26 @@ namespace LuminousVector.Aoba.Server
 			return $"{HOST}/i/{media.id}";
 		}
 
+		//internal static string Sanitize(string data) => data.Replace(' ', )
+
 		internal static MediaModel GetMedia(string id)
 		{
-			id = Uri.EscapeUriString(id);
-			var media = Media.Find("{id : '" + id + "'}").First();
-			if (media.IsBsonNull)
+			id = Uri.EscapeUriString(id.Replace(' ', '+'));
+			var media = Media.Find("{id : '" + id + "'}").FirstOrDefault();
+			if (media == null)
 				return null;
 			return new MediaModel
 			{
 				id = id,
 				type = (MediaModel.MediaType)media.GetValue("type").AsInt32,
-				mediaStream = GetMediaStream(id),
+				mediaStream = GetMediaStream(media.GetValue("media")),
 				ext = media.GetValue("ext").AsString
 			};
 		}
-		internal static Stream GetMediaStream(string id)
+		internal static Stream GetMediaStream(BsonValue id)
 		{
-			var res = Media.Find("{ id : '" + id + "' }");
 			var mediaFile = new MemoryStream();
-			GridFS.DownloadToStream(res.First().GetValue("media"), mediaFile);
+			GridFS.DownloadToStream(id, mediaFile);
 			mediaFile.Position = 0;
 			return mediaFile;
 		}

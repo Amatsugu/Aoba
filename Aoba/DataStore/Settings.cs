@@ -5,8 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
-using ProtoBuf;
-using LuminousVector.Serialization;
 using System.IO;
 using LuminousVector.Aoba.Keyboard;
 using Newtonsoft.Json;
@@ -20,7 +18,6 @@ namespace LuminousVector.Aoba.DataStore
 		PrimaryScreen = 2
 	}
 
-	[ProtoContract]
 	public class Settings
 	{
 		public Settings()
@@ -107,7 +104,17 @@ namespace LuminousVector.Aoba.DataStore
 		public bool CloseToTray { get; set; }
 		public bool StartInTray { get; set; }
 
-		public static Settings Load(string file) => JsonConvert.DeserializeObject<Settings>(File.ReadAllText(file));
+		public static Settings Load(string file)
+		{
+			try
+			{
+
+				return JsonConvert.DeserializeObject<Settings>(File.ReadAllText(file));
+			}catch
+			{
+				return null;
+			}
+		}
 
 		public void Save(string file) => File.WriteAllText(file, JsonConvert.SerializeObject(this));
 

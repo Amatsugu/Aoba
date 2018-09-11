@@ -262,7 +262,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Aoba.cs" />
     <Compile Include="AobaCore.cs" />
     <Compile Include="Bootstrap\RazorConfig.cs" />
     <Compile Include="Bootstrap\RootProvider.cs" />

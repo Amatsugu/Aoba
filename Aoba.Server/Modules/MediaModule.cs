@@ -17,7 +17,11 @@ namespace LuminousVector.Aoba.Server.Modules
 		{
 			Get["/{id}"] = p =>
 			{
-				var media = AobaCore.GetMedia((string)p.id);
+				var id = (string)p.id;
+				id = id.Replace(' ', '+');
+				var start = DateTime.Now;
+				var media = AobaCore.GetMedia(id);
+				Console.WriteLine($"Retreive Latency: {(DateTime.Now - start).TotalMilliseconds}ms");
 				if(media == null)
 					return new NotFoundResponse();
 				else
@@ -43,11 +47,11 @@ namespace LuminousVector.Aoba.Server.Modules
 							try
 							{
 								var file = TagLib.File.Create(new FileStreamAbstraction($"{media.id}{ext}", media.mediaStream));
-								return View["audio.cshtml", new { p.id, rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext, title = file.Tag.Title, artist = (file.Tag.FirstPerformer ?? file.Tag.AlbumArtists.First()), album = file.Tag.Album }];
+								return View["audio.cshtml", new { p.id, rawUri = $"/i/raw/{id}{ext}", format = ext, title = file.Tag.Title, artist = (file.Tag.FirstPerformer ?? file.Tag.AlbumArtists.First()), album = file.Tag.Album }];
 							}
 							catch(TagLib.UnsupportedFormatException)
 							{
-								return View["audio.cshtml", new { p.id, rawUri = $"/i/raw/{(string)p.id}{ext}", format = ext }];
+								return View["audio.cshtml", new { p.id, rawUri = $"/i/raw/{id}{ext}", format = ext }];
 							}
 						//Video
 						case MediaType.Video:
@@ -55,14 +59,15 @@ namespace LuminousVector.Aoba.Server.Modules
 							//return View["video.cshtml", new { rawUri = $"/i/raw/{(string)p.id}{ext}", format = Path.GetExtension(media.uri).ToLower() }];
 						//Raw
 						default:
-							return Response.AsRedirect($"/i/{(string)p.id}/raw");
+							return Response.AsRedirect($"/i/{id}/raw");
 					}
 				}
 			};
 
 			Get["/{id}/og"] = p =>
 			{
-				var media = AobaCore.GetMedia((string)p.id);
+				var id = (string)p.id;
+				var media = AobaCore.GetMedia(id);
 				if (media == null)
 					return new NotFoundResponse();
 				else
@@ -98,7 +103,7 @@ namespace LuminousVector.Aoba.Server.Modules
 						case MediaType.Video:
 							return new NotFoundResponse();
 						default:
-							return Response.AsRedirect($"/i/raw/{(string)p.id}{ext}");
+							return Response.AsRedirect($"/i/raw/{id}{ext}");
 					}
 				}
 			};

@@ -40,7 +40,7 @@ namespace LuminousVector.Aoba.Server.Bootstrap
 #if DEBUG
 		private void AfterRequest(NancyContext context)
 		{
-			Console.WriteLine(context.Request.UserHostAddress);
+			Console.WriteLine($"DEBUG: {context.Request.UserHostAddress}");
 		}
 #endif
 

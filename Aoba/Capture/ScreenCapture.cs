@@ -34,6 +34,15 @@ namespace LuminousVector.Aoba.Capture
 		[DllImport("user32.dll")]
 		public static extern bool GetWindowRect(IntPtr hWnd, out WindowRect lpRect);
 
+		[DllImport("user32.dll")]
+		public static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, out uint ProcessId);
+
+		public static int GetForgroundWindowId()
+		{
+			GetWindowThreadProcessId(GetForegroundWindow(), out uint id);
+			return (int)id;
+		}
+
 		private static Bitmap CaptureScreen(Screen screen)
 		{
 			Bitmap screenCap = new Bitmap(screen.Bounds.Width, screen.Bounds.Height);
