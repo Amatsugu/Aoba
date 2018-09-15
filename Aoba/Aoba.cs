@@ -14,7 +14,7 @@ using System.Windows.Forms;
 using System.Windows.Threading;
 using Flurl;
 using Flurl.Http;
-using LuminousVector.Aoba.Capture;
+using LuminousVector.Aoba.DesktopCapture;
 using LuminousVector.Aoba.DataStore;
 using LuminousVector.Aoba.Keyboard;
 using LuminousVector.Aoba.Models;
@@ -23,6 +23,7 @@ using Clipboard = System.Windows.Clipboard;
 using Timer = System.Threading.Timer;
 using Capture;
 using Capture.Interface;
+using System.Threading;
 
 namespace LuminousVector.Aoba
 {
@@ -75,6 +76,7 @@ namespace LuminousVector.Aoba
 		private static Timer _uploadShellWatcher;
 		private static Dispatcher _aobaDispatcher;
 		private static CaptureProcess _curHook;
+		private static ManualResetEvent captureEvent = new ManualResetEvent(false);
 
 		internal static void Init()
 		{
@@ -309,25 +311,38 @@ namespace LuminousVector.Aoba
 				try
 				{
 					_curHook = new CaptureProcess(process, d3dCapConfig, captureI);
-				}catch(Exception e)
+				}catch
 				{
 					_curHook = null;
 				}
 			}
 			Bitmap screenCap;
+			bool captured = false;
 			if(_curHook != null)
 			{
+				captureEvent.Reset();
 				var capture = _curHook.CaptureInterface;
-				var res = capture.BeginGetScreenshot(rect.AsRectange(), new TimeSpan(0, 0, 10));
-				capture.EndGetScreenshot(res);
-				screenCap = capture.GetScreenshot().ToBitmap();
-				var pngCap = new MemoryStream();
-				screenCap.Save(pngCap, System.Drawing.Imaging.ImageFormat.Png);
-				screenCap = new Bitmap(pngCap);
-			}else
-			{
-				screenCap = ScreenCapture.CaptureRegion(rect.AsRectange());
+				capture.BeginGetScreenshot(rect.AsRectange(), new TimeSpan(0, 0, 2), r =>
+				{
+					var screen = capture.EndGetScreenshot(r);
+
+					if (screen == null)
+					{
+						_curHook = null;
+						captureEvent.Set();
+						return;
+					}
+					if (Settings.ShowToasts && Settings.ToastCapture)
+						Notify("Screenshot Captured");
+					PublishScreen(screen.ToBitmap());
+					captured = true;
+					captureEvent.Set();
+				}, null, Capture.Interface.ImageFormat.Png);
+				captureEvent.WaitOne();
+				if (captured)
+					return;
 			}
+			screenCap = ScreenCapture.CaptureRegion(rect.AsRectange());
 			if (Settings.ShowToasts && Settings.ToastCapture)
 				Notify("Screenshot Captured");
 			PublishScreen(screenCap);
