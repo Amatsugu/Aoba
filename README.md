@@ -24,4 +24,5 @@ A screen capture/upload client like puush but with game capture support.
 <li><a href="https://github.com/audiocogs/aurora.js/">Auroa.js + format extentions</a></li>
 <li><a href="https://tmenier.github.io/Flurl/">Flurl</a></li>
 <li><a href="http://nancyfx.org/">Nancy</a></li>
+<li><a href="https://github.com/spazzarama/Direct3DHook">Direct3DHook</a></li>
 </ul>
