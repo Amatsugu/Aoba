@@ -311,6 +311,7 @@ namespace LuminousVector.Aoba
 				try
 				{
 					_curHook = new CaptureProcess(process, d3dCapConfig, captureI);
+					Thread.Sleep(10);
 				}catch
 				{
 					_curHook = null;

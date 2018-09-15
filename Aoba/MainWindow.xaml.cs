@@ -20,6 +20,9 @@ using Flurl.Http;
 using System.ComponentModel;
 using System.Diagnostics;
 using LuminousVector.Aoba.Keyboard;
+using IWshRuntimeLibrary;
+using System.IO;
+using System.Runtime.InteropServices;
 
 namespace LuminousVector.Aoba
 {
@@ -325,6 +328,50 @@ namespace LuminousVector.Aoba
 		{
 			Aoba.Settings.StartInTray = (StartInTray.IsChecked == null) ? false : (bool)StartInTray.IsChecked;
 			Save();
+		}
+
+		private void RunOnStartup_Click(object sender, RoutedEventArgs e)
+		{
+			Save();
+			var startupDir = $@"{Environment.GetFolderPath(Environment.SpecialFolder.Startup)}\Aoba";
+			var shortcutDir = $@"{startupDir}\Aoba.lnk";
+			if (Aoba.Settings.RunAtStart) //Create Shortcut
+			{
+				if(!Directory.Exists(startupDir))
+					Directory.CreateDirectory(startupDir);
+				if (System.IO.File.Exists(shortcutDir))
+					return;
+				var exeLoc = System.Reflection.Assembly.GetExecutingAssembly().Location;
+
+				Type t = Type.GetTypeFromCLSID(new Guid("72C24DD5-D70A-438B-8A42-98424B88AFB8")); //Windows Script Host Shell Object
+				dynamic shell = Activator.CreateInstance(t);
+				try
+				{
+					var shortcut = shell.CreateShortcut(shortcutDir);
+					try
+					{
+						shortcut.Description = "Aoba Capture";
+						shortcut.TargetPath = exeLoc;
+						shortcut.WorkingDirectory = System.IO.Path.GetDirectoryName(exeLoc);
+						shortcut.Save();
+					}
+					finally
+					{
+						Marshal.FinalReleaseComObject(shortcut);
+					}
+				}
+				finally
+				{
+					Marshal.FinalReleaseComObject(shell);
+				}
+
+			}else //Remove Shortcut
+			{
+				if (!Directory.Exists(startupDir))
+					return;
+				if (System.IO.File.Exists(shortcutDir))
+					System.IO.File.Delete(shortcutDir);
+			}
 		}
 	}
 }

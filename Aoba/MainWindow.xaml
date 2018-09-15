@@ -12,7 +12,7 @@
 				<TabItem Header="General">
 					<StackPanel>
 						<GroupBox Header="Startup">
-							<CheckBox IsEnabled="False" x:Name="RunOnStartup" Content="Run at System Startup (NYI)" Margin="5 0 0 0" IsChecked="True" Click="DataUpdated"/>
+							<CheckBox IsEnabled="True" x:Name="RunOnStartup" Content="Run at System Startup" Margin="5 0 0 0" IsChecked="True" Click="RunOnStartup_Click"/>
 						</GroupBox>
 						<GroupBox Header="After Upload" Padding="5 0 0 0">
 							<StackPanel>
