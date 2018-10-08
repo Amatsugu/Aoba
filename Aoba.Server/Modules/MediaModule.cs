@@ -13,6 +13,7 @@ namespace LuminousVector.Aoba.Server.Modules
 {
 	public class MediaModule : NancyModule
 	{
+
 		public MediaModule() : base("/i")
 		{
 			Get["/{id}"] = p =>
@@ -59,7 +60,7 @@ namespace LuminousVector.Aoba.Server.Modules
 							//return View["video.cshtml", new { rawUri = $"/i/raw/{(string)p.id}{ext}", format = Path.GetExtension(media.uri).ToLower() }];
 						//Raw
 						default:
-							return Response.AsRedirect($"/i/{id}/raw");
+							return Response.AsRedirect($"/i/raw/{id}{ext}");
 					}
 				}
 			};
