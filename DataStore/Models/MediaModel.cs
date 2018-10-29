@@ -21,7 +21,9 @@ namespace LuminousVector.Aoba.Models
 		public string id;
 		public MediaType type;
 		public Stream mediaStream;
-		public string ext;
+		public string fileName;
+		public string Ext => Path.GetExtension(fileName);
+		public string mediaId;
 
 
 		private static readonly Dictionary<string, MediaType> AllowedFiles = new Dictionary<string, MediaType>()

@@ -23,7 +23,6 @@ namespace LuminousVector.Aoba.Server
 #else
 		public const string BASE_DIR = "M:/Aoba";
 #endif
-		public static string MEDIA_DIR => $"{BASE_DIR}/Media";
 
 		public static MongoClient DBClient
 		{
@@ -233,21 +232,32 @@ namespace LuminousVector.Aoba.Server
 			Users.UpdateOne("{regTokens : '" + token + "'}", "{ $pull: { regTokens : '" + token + "' } }");
 		}
 
+		private const int MAX_BIN_DATA_SIZE = (int)1.4e7;
+
 		internal static string AddMedia(string userId, MediaModel media)
 		{
 			media.id = GetNewID();
+			var useGrid = media.mediaStream.Length > MAX_BIN_DATA_SIZE;
 			Media.InsertOne(new BsonDocument
 			{
 				{ "id", media.id },
 				{ "type", media.type },
-				{ "media", GridFS.UploadFromStream(media.id, media.mediaStream) },
-				{ "ext", media.ext },
+				{ "media", (useGrid ? GridFS.UploadFromStream(media.id, media.mediaStream) : BsonValue.Create(null) )},
+				{ "mediaBin", (useGrid ? BsonValue.Create(null) : new BsonBinaryData(StreamToByteA(media.mediaStream))) },
+				{ "fileName", media.fileName },
 				{ "owner", userId },
 				{ "views", 0 }
 			});
 			return $"{HOST}/i/{media.id}";
 		}
 
+
+		private static byte[] StreamToByteA(Stream stream)
+		{
+			byte[] bArray = new byte[stream.Length];
+			stream.Read(bArray, 0, (int)stream.Length);
+			return bArray;
+		}
 		//internal static string Sanitize(string data) => data.Replace(' ', )
 
 		internal static MediaModel GetMedia(string id)
@@ -256,12 +266,16 @@ namespace LuminousVector.Aoba.Server
 			var media = Media.Find("{id : '" + id + "'}").FirstOrDefault();
 			if (media == null)
 				return null;
+			BsonValue fn;
+			if (!media.TryGetValue("fileName", out fn))
+				fn = BsonValue.Create(null);
+			var mediaID = media.GetValue("media");
 			return new MediaModel
 			{
 				id = id,
 				type = (MediaModel.MediaType)media.GetValue("type").AsInt32,
-				mediaStream = GetMediaStream(media.GetValue("media")),
-				ext = media.GetValue("ext").AsString
+				mediaStream = (mediaID.IsBsonNull ? new MemoryStream(((BsonBinaryData)media.GetValue("mediaBin")).AsByteArray) : GetMediaStream(mediaID)),
+				fileName = (fn.IsBsonNull ? $"{id}{media.GetValue("ext")}" : fn.AsString)
 			};
 		}
 		internal static Stream GetMediaStream(BsonValue id)

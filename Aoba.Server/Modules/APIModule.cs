@@ -29,12 +29,9 @@ namespace LuminousVector.Aoba.Server.Modules
 
 			Post["/image"] = p =>
 			{
-				if (!Directory.Exists(AobaCore.MEDIA_DIR))
-					Directory.CreateDirectory(AobaCore.MEDIA_DIR);
 				try
 				{
 					var f = Context.Request.Files.First();
-					string fileName = $"{AobaCore.GetNewID()}{Path.GetExtension(f.Name)}";
 					//using (FileStream file = new FileStream($"{AobaCore.MEDIA_DIR}/{fileNmae}", FileMode.CreateNew))
 					//{
 						//f.Value.CopyTo(file);
@@ -45,7 +42,8 @@ namespace LuminousVector.Aoba.Server.Modules
 						//uri = $"/{fileNmae}",
 						type = (MediaModel.MediaType)Enum.Parse(typeof(MediaModel.MediaType), f.ContentType),
 						mediaStream = f.Value,
-						ext = Path.GetExtension(fileName)
+						fileName = f.Name
+						//Ext = Path.GetExtension(fileName)
 					};
 					media.mediaStream.Position = 0;
 					//f.Value.Read(media.media, 0, (int)f.Value.Length);

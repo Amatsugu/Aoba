@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LuminousVector.Aoba.Models;
+using MongoDB.Bson;
 using Nancy.Hosting.Self;
 
 namespace LuminousVector.Aoba.Server

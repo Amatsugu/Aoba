@@ -29,7 +29,7 @@ namespace LuminousVector.Aoba.Server.Modules
 				{
 					if (media.mediaStream == null || media.mediaStream.Length <= 0)
 						return new NotFoundResponse();
-					string ext = media.ext;
+					string ext = media.Ext;
 					AobaCore.IncrementViewCount(media.id);
 					switch (media.type)
 					{
@@ -48,19 +48,19 @@ namespace LuminousVector.Aoba.Server.Modules
 							try
 							{
 								var file = TagLib.File.Create(new FileStreamAbstraction($"{media.id}{ext}", media.mediaStream));
-								return View["audio.cshtml", new { p.id, rawUri = $"/i/raw/{id}{ext}", format = ext, title = file.Tag.Title, artist = (file.Tag.FirstPerformer ?? file.Tag.AlbumArtists.First()), album = file.Tag.Album }];
+								return View["audio.cshtml", new { p.id, rawUri = $"/i/raw/{id}/{media.fileName}", format = ext, title = file.Tag.Title, artist = (file.Tag.FirstPerformer ?? file.Tag.AlbumArtists.First()), album = file.Tag.Album }];
 							}
 							catch(TagLib.UnsupportedFormatException)
 							{
-								return View["audio.cshtml", new { p.id, rawUri = $"/i/raw/{id}{ext}", format = ext }];
+								return View["audio.cshtml", new { p.id, rawUri = $"/i/raw/{id}/{media.fileName}", format = ext }];
 							}
 						//Video
 						case MediaType.Video:
-							return Response.FromStream(media.mediaStream, MimeTypes.GetMimeType(media.ext)); // TODO: Video player
+							return Response.FromStream(media.mediaStream, MimeTypes.GetMimeType(media.Ext)); // TODO: Video player
 							//return View["video.cshtml", new { rawUri = $"/i/raw/{(string)p.id}{ext}", format = Path.GetExtension(media.uri).ToLower() }];
 						//Raw
 						default:
-							return Response.AsRedirect($"/i/raw/{id}{ext}");
+							return Response.AsRedirect($"/i/raw/{id}/{media.fileName}");
 					}
 				}
 			};
@@ -75,7 +75,7 @@ namespace LuminousVector.Aoba.Server.Modules
 				{
 					if (media.mediaStream == null || media.mediaStream.Length <= 0)
 						return new NotFoundResponse();
-					string ext = media.ext;
+					string ext = media.Ext;
 					switch (media.type)
 					{
 						//Image
@@ -104,18 +104,18 @@ namespace LuminousVector.Aoba.Server.Modules
 						case MediaType.Video:
 							return new NotFoundResponse();
 						default:
-							return Response.AsRedirect($"/i/raw/{id}{ext}");
+							return Response.AsRedirect($"/i/raw/{id}/{media.fileName}");
 					}
 				}
 			};
 
-			Get["/raw/{id}.{ext}"] = p =>
+			Get["/raw/{id}/{fName}.{ext}"] = p =>
 			{
 				var media = AobaCore.GetMedia((string)p.id);
 				if (media == null)
 					return new NotFoundResponse();
 				else
-					return Response.FromStream(media.mediaStream, MimeTypes.GetMimeType(media.ext));
+					return Response.FromStream(media.mediaStream, MimeTypes.GetMimeType(media.Ext));
 			};
 
 			//Get["/"] = _ =>
