@@ -233,28 +233,32 @@ namespace LuminousVector.Aoba.Server
 			Users.UpdateOne("{regTokens : '" + token + "'}", "{ $pull: { regTokens : '" + token + "' } }");
 		}
 
-		private const int MAX_BIN_DATA_SIZE = (int)1.4e7;
+		private const int MAX_BIN_DATA_SIZE = (int)1e6;
 
 		internal static string AddMedia(string userId, MediaModel media)
 		{
 			media.id = GetNewID();
-			//var useGrid = media.mediaStream.Length > MAX_BIN_DATA_SIZE;
+			//var useDB = true;//media.mediaStream.Length > MAX_BIN_DATA_SIZE;
 			if (!Directory.Exists($"{BASE_DIR}{media.type.ToString()}"))
 				Directory.CreateDirectory($"{BASE_DIR}{media.type.ToString()}");
 			var uriName = $"{media.type.ToString()}/{media.id}{media.Ext}";
-			using (var fs = new FileStream($"{BASE_DIR}{uriName}", FileMode.CreateNew))
-			{
-				media.mediaStream.Position = 0;
-				media.mediaStream.CopyTo(fs);
-				fs.FlushAsync();
-			}
+			//if (!useDB)
+			//{
+				using (var fs = new FileStream($"{BASE_DIR}{uriName}", FileMode.CreateNew))
+				{
+					media.mediaStream.Position = 0;
+					media.mediaStream.CopyTo(fs);
+					fs.FlushAsync();
+				}
+			//}
+			//var mediaId = GridFS.UploadFromStream(media.id, media.mediaStream);
 			Media.InsertOne(new BsonDocument
 			{
 				{ "id", media.id },
 				{ "type", media.type },
-				//{ "media", (useGrid ? GridFS.UploadFromStream(media.id, media.mediaStream) : BsonValue.Create(null) )},
-				{ "mediaUri",  uriName },
-				//{ "mediaBin", (useGrid ? BsonValue.Create(null) : new BsonBinaryData(StreamToByteA(media.mediaStream))) },
+				//{ "media", (useDB ? mediaId : BsonValue.Create(null) )},
+				{ "mediaUri",  BsonValue.Create(uriName) },
+				//{ "mediaBin", (useDB ? BsonValue.Create(null) : new BsonBinaryData(StreamToByteA(media.mediaStream))) },
 				{ "fileName", media.fileName },
 				{ "owner", userId },
 				{ "views", 0 }
@@ -280,16 +284,21 @@ namespace LuminousVector.Aoba.Server
 			BsonValue fn;
 			if (!media.TryGetValue("fileName", out fn))
 				fn = BsonValue.Create(null);
-			Stream file;
+			Stream file = null;
 			var type = (MediaModel.MediaType)media.GetValue("type").AsInt32;
 			if (media.Contains("mediaUri"))
 			{
 				var mediaUri = media.GetValue("mediaUri");
-				file = File.OpenRead($"{BASE_DIR}{mediaUri}");
-			}else
+				if (!mediaUri.IsBsonNull)
+					file = File.OpenRead($"{BASE_DIR}{mediaUri}");
+			}
+			if (file == null)
 			{
 				var mediaID = media.GetValue("media");
-				file = (mediaID.IsBsonNull ? new MemoryStream(((BsonBinaryData)media.GetValue("mediaBin")).AsByteArray) : GetMediaStream(mediaID));
+				if (mediaID.IsBsonNull)
+					file = new MemoryStream(((BsonBinaryData)media.GetValue("mediaBin")).AsByteArray);
+				else
+					file = GetMediaStream(mediaID);
 			}
 			return new MediaModel
 			{

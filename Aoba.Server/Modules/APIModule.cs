@@ -49,8 +49,9 @@ namespace LuminousVector.Aoba.Server.Modules
 					//f.Value.Read(media.media, 0, (int)f.Value.Length);
 					return AobaCore.AddMedia(((UserModel)Context.CurrentUser).ID, media);
 				}
-				catch
+				catch(Exception e)
 				{
+					Console.WriteLine(e.StackTrace);
 					return new Response() { StatusCode = HttpStatusCode.ImATeapot};
 				}
 			};
