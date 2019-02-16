@@ -47,9 +47,13 @@ namespace LuminousVector.Aoba
 
 		public static CaptureConfig d3dCapConfig;
 
-
-		private static string _apiUri = "https://aobacapture.com/api";
-		private static string _authUri = "https://aobacapture.com/auth";
+#if DEBUG
+		private const string HOST = "http://localhost:4321";
+#else
+		private const string HOST = "https://aobacapture.com";
+#endif
+		private static string API_URI = $"{HOST}/api";
+		private static string AUTH_URI = $"{HOST}/auth";
 		private static Settings _settings;
 		private static CookieContainer _cookies;
 		private static SoundPlayer _successSound;
@@ -227,16 +231,16 @@ namespace LuminousVector.Aoba
 		internal static void CreateCookie()
 		{
 			_cookies = new CookieContainer();
-			_cookies.Add(new Uri(_apiUri), new Cookie("ApiKey", Settings.AuthToken));
+			_cookies.Add(new Uri(API_URI), new Cookie("ApiKey", Settings.AuthToken));
 		}
 
 		internal static void InstallContextMenu()
 		{
 			
 		}
-		#endregion
+#endregion
 
-		#region Capture Region
+#region Capture Region
 		private static void BeginRegionCapture()
 		{
 			if (!_capturingRect)
@@ -265,9 +269,9 @@ namespace LuminousVector.Aoba
 				Notify("Screenshot Captured");
 			PublishScreen(screenCap);
 		}
-		#endregion
+#endregion
 
-		#region Capture Fullscreen
+#region Capture Fullscreen
 		private static void CaptureFullscreenAndSave()
 		{
 			Image screenCap = null;
@@ -294,9 +298,9 @@ namespace LuminousVector.Aoba
 			}
 			PublishScreen(screenCap);
 		}
-		#endregion
+#endregion
 
-		#region Capture Window
+#region Capture Window
 		public static void CaptureWindow()
 		{
 			var process = Process.GetProcessById(ScreenCapture.GetForgroundWindowId());
@@ -353,7 +357,7 @@ namespace LuminousVector.Aoba
 		{
 			
 		}
-		#endregion
+#endregion
 
 
 		private static async void PublishScreen(Image screenCap)
@@ -374,7 +378,7 @@ namespace LuminousVector.Aoba
 				{
 					screenCap.Save(image, Settings.Format);
 					image.Position = 0;
-					var uri = await _apiUri.AppendPathSegment("image").Upload(image, fileName, _cookies);
+					var uri = await API_URI.AppendPathSegment("image").Upload(image, fileName, _cookies);
 					UploadSucess(uri);
 				}
 				catch (Exception e)
@@ -401,7 +405,7 @@ namespace LuminousVector.Aoba
 		{
 			try
 			{
-				var uri = await _apiUri.AppendPathSegment("image").Upload(file, _cookies, MediaModel.GetMediaType(file));
+				var uri = await API_URI.AppendPathSegment("image").Upload(file, _cookies, MediaModel.GetMediaType(file));
 				UploadSucess(uri);
 			}
 			catch (Exception ex)
@@ -410,7 +414,7 @@ namespace LuminousVector.Aoba
 			}
 		}
 
-		#region Post Upload
+#region Post Upload
 		private static void UploadSucess(string uri)
 		{
 			uri = $"https://{uri}";
@@ -455,7 +459,7 @@ namespace LuminousVector.Aoba
 
 		internal static async Task Login()
 		{
-			var token = await _authUri.AppendPathSegment("login").PostJsonAsync(new { Settings.Username, Settings.Password, AuthMode = "API" }).ReceiveJson<AuthToken>();
+			var token = await AUTH_URI.AppendPathSegment("login").PostJsonAsync(new { Settings.Username, Settings.Password, AuthMode = "API" }).ReceiveJson<AuthToken>();
 			Settings.AuthToken = token.ApiKey;
 			CreateCookie();
 		}
@@ -464,7 +468,7 @@ namespace LuminousVector.Aoba
 		{
 			try
 			{
-				UserStats = await _apiUri.AppendPathSegment("userStats").WithCookie("ApiKey", Settings.AuthToken).GetJsonAsync<UserStatsModel>();
+				UserStats = await API_URI.AppendPathSegment("userStats").WithCookie("ApiKey", Settings.AuthToken).GetJsonAsync<UserStatsModel>();
 
 			}catch(Exception e)
 			{
