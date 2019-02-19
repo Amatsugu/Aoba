@@ -93,7 +93,8 @@ $(document).ready(function(){
 		setVol(80);
 	else
 		setVol(Number(window.localStorage.getItem("volume")));
-	TogglePlayPause();
+	// TogglePlayPause();
+	player.preload();
 
 });
 

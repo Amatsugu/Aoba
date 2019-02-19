@@ -11,7 +11,7 @@ namespace LuminousVector.Aoba.Server.Modules
 		{
 			Get["/{token}"] = p =>
 			{
-				var referer = AobaCore.ValidateRegistrationToken((string)p.token);
+				var referer = AobaCore.ValidateRegistrationToken(((string)p.token).Replace(' ', '+'));
 				if (referer == null || referer == UserModel.Overlord)
 					return new Response { StatusCode = HttpStatusCode.Unauthorized };
 				else
@@ -21,7 +21,7 @@ namespace LuminousVector.Aoba.Server.Modules
 			Post["/{token}"] = p =>
 			{
 				var userInfo = this.Bind<LoginCredentialsModel>();
-				if (AobaCore.RegisterUser(userInfo, (string)p.token))
+				if (AobaCore.RegisterUser(userInfo, ((string)p.token).Replace(' ', '+')))
 					return new Response { StatusCode = HttpStatusCode.OK };
 				else
 					return new Response { StatusCode = HttpStatusCode.Unauthorized };

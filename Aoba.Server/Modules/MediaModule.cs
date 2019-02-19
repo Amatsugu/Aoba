@@ -68,6 +68,7 @@ namespace LuminousVector.Aoba.Server.Modules
 			Get["/{id}/og"] = p =>
 			{
 				var id = (string)p.id;
+				id = id.Replace(' ', '+');
 				var media = AobaCore.GetMedia(id);
 				if (media == null)
 					return new NotFoundResponse();
@@ -111,7 +112,7 @@ namespace LuminousVector.Aoba.Server.Modules
 
 			Get["/raw/{id}/{fName}.{ext}"] = p =>
 			{
-				var media = AobaCore.GetMedia((string)p.id);
+				var media = AobaCore.GetMedia(((string)p.id).Replace(' ', '+'));
 				if (media == null)
 					return new NotFoundResponse();
 				else

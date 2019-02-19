@@ -3,6 +3,7 @@ using Nancy;
 using Nancy.Authentication.Stateless;
 using Nancy.Security;
 using System.Linq;
+using LuminousVector.Aoba.Models;
 
 namespace LuminousVector.Aoba.Server.Modules
 {
@@ -14,7 +15,7 @@ namespace LuminousVector.Aoba.Server.Modules
 			this.RequiresAuthentication();
 			Get["/"] = p =>
 			{
-				Console.WriteLine($"User: {Context.CurrentUser?.UserName}");
+				Console.WriteLine($"User: {((UserModel)Context.CurrentUser)?.UserName}");
 				return View["index"];
 			};
 		}

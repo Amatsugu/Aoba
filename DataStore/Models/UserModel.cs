@@ -21,7 +21,7 @@ namespace LuminousVector.Aoba.Models
 
 		public UserModel(string username, string id, IEnumerable<string> claims = null)
 		{
-			UserName = Uri.EscapeDataString(username);
+			UserName = username;
 			ID = id;
 			Claims = claims;
 		}

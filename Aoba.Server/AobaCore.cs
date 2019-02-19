@@ -136,7 +136,7 @@ namespace LuminousVector.Aoba.Server
 		{
 			if (string.IsNullOrWhiteSpace(apiKey))
 				return null;
-			apiKey = Uri.EscapeDataString(apiKey);
+			apiKey = Sanitize(apiKey);
 			//var user = Users.Find(u => u.GetValue("apiKeys").AsBsonArray.Contains(apiKey)).First();
 			var user = Users.Find("{ 'apiKeys' : '" + apiKey + "' }").First();
 			if (user.IsBsonNull)
@@ -155,7 +155,7 @@ namespace LuminousVector.Aoba.Server
 
 		internal static string ValidateUser(LoginCredentialsModel login)
 		{
-			login.Username = Uri.EscapeDataString(login.Username);
+			login.Username = Sanitize(login.Username);
 			//var userInfo = Users.Find(u => u.GetValue("username").Equals(login.Username)).First();
 			var userInfo = Users.Find("{ username : '" + login.Username + "'}").First();
 			if (userInfo.IsBsonNull)
@@ -170,7 +170,7 @@ namespace LuminousVector.Aoba.Server
 			var user = Users.Find("{ id : '" + userId + "'}").First();
 			if (user.IsBsonNull)
 				return null;
-			var apiKey = user.GetValue("apiKeys").AsBsonArray.First().AsString;
+			var apiKey = user.GetValue("apiKeys").AsBsonArray.FirstOrDefault()?.AsString;
 			if (string.IsNullOrWhiteSpace(apiKey))
 				return RegisterNewApiKey(userId);
 			else
@@ -179,7 +179,7 @@ namespace LuminousVector.Aoba.Server
 
 		internal static bool UserExists(string username)
 		{
-			username = Uri.EscapeDataString(username);
+			username = Sanitize(username);
 			return Users.Count("{ username : '" + username + "'}") > 0;
 		}
 
@@ -192,7 +192,7 @@ namespace LuminousVector.Aoba.Server
 
 		internal static bool RegisterUser(LoginCredentialsModel login, string token)
 		{
-			token = Uri.EscapeUriString(token);
+			token = Sanitize(token);
 			try
 			{
 				var referer = ValidateRegistrationToken(token);
@@ -201,7 +201,7 @@ namespace LuminousVector.Aoba.Server
 					var userID = GetNewID();
 					var newUser = new BsonDocument
 					{
-						{ "username", login.Username },
+						{ "username", Sanitize(login.Username) },
 						{ "id", userID },
 						{ "passHash", HashPassword(login.Password) },
 						{ "claims", new BsonArray(new string[0]) },
@@ -209,6 +209,7 @@ namespace LuminousVector.Aoba.Server
 						{ "regTokens", new BsonArray(new string[0]) },
 					};
 					Users.InsertOne(newUser);
+					RemoveRegToken(token);
 					return true;
 				}
 				return false;
@@ -229,7 +230,7 @@ namespace LuminousVector.Aoba.Server
 
 		internal static void RemoveRegToken(string token)
 		{
-			token = Uri.EscapeUriString(token);
+			token = Sanitize(token);
 			Users.UpdateOne("{regTokens : '" + token + "'}", "{ $pull: { regTokens : '" + token + "' } }");
 		}
 
@@ -277,12 +278,11 @@ namespace LuminousVector.Aoba.Server
 
 		internal static MediaModel GetMedia(string id)
 		{
-			id = Uri.EscapeUriString(id.Replace(' ', '+'));
+			id = Sanitize(id.Replace(' ', '+'));
 			var media = Media.Find("{id : '" + id + "'}").FirstOrDefault();
 			if (media == null)
 				return null;
-			BsonValue fn;
-			if (!media.TryGetValue("fileName", out fn))
+			if (!media.TryGetValue("fileName", out BsonValue fn))
 				fn = BsonValue.Create(null);
 			Stream file = null;
 			var type = (MediaModel.MediaType)media.GetValue("type").AsInt32;
@@ -319,23 +319,42 @@ namespace LuminousVector.Aoba.Server
 
 		internal static UserStatsModel GetUserStats(string userid) => new UserStatsModel
 		{
-			screenShotCount = (int)Media.Count("{ owner : '" + userid + "'}")
+			screenShotCount = (int)Media.Count("{ owner : '" + Sanitize(userid) + "'}")
 		};
 
 		internal static void IncrementViewCount(string id)
 		{
-			id = Uri.EscapeUriString(id);
+			id = Sanitize(id);
 			Media.UpdateOne("{ id : '" + id + "'}", "{ $inc: { views : 1 } }");
 		}
 
 		internal static string GetNewID() => Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("=", "").Replace("/", "_").Replace(@"\", ".");
 
+		public static string Sanitize(string raw)
+		{
+			raw = raw.Replace("<", "&lt");
+			raw = raw.Replace(">", "&gt");
+			raw = raw.Replace("\'", "&quot");
+			raw = raw.Replace("\"", "&apos");
+			return raw;
+		}
+
+		public static string UnSanitize(string sanitized)
+		{
+			sanitized = sanitized.Replace("&lt", "<");
+			sanitized = sanitized.Replace("&gt", ">");
+			sanitized = sanitized.Replace("&quot", "\'");
+			sanitized = sanitized.Replace("&apos", "\"");
+			sanitized = Uri.UnescapeDataString(sanitized);
+			return sanitized;
+		}
+
 		internal static UserModel ValidateRegistrationToken(string token)
 		{
-			token = Uri.EscapeUriString(token);
+			token = Sanitize(token);
 			//var user = Users.Find(u => u.GetValue("regToken").AsBsonArray.Contains(token)).First();
-			var user = Users.Find("{ 'regToken' : '" + token + "' }").First();
-			if (user.IsBsonNull)
+			var user = Users.Find("{ regTokens : '" + token + "' }").FirstOrDefault();
+			if (user == null)
 				return null;
 			var um = new UserModel(user.GetValue("username").AsString, user.GetValue("id").AsString, user.GetValue("claims").AsBsonArray.Select(c => c.AsString));
 			return um;
