@@ -50,7 +50,7 @@ namespace LuminousVector.Aoba
 #if DEBUG
 		private const string HOST = "http://localhost:4321";
 #else
-		private const string HOST = "https://aobacapture.com";
+		private const string HOST = "https://aoba.app";
 #endif
 		private static string API_URI = $"{HOST}/api";
 		private static string AUTH_URI = $"{HOST}/auth";
@@ -90,6 +90,7 @@ namespace LuminousVector.Aoba
 				Direct3DVersion = Direct3DVersion.AutoDetect,
 				ShowOverlay = false
 			};
+
 
 			//Settings
 			try
@@ -393,6 +394,8 @@ namespace LuminousVector.Aoba
 			using (var dialog = new OpenFileDialog())
 			{
 				dialog.Filter = MediaModel.GetFilterString();
+				dialog.RestoreDirectory = true;
+				//dialog.FilterIndex = 1;
 				dialog.FileOk += async (s, e) =>
 				{
 					await Upload(dialog.FileName);

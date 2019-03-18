@@ -13,6 +13,7 @@ namespace LuminousVector.Aoba.Server
 	{
 		static void Main(string[] args)
 		{
+			Console.ReadLine();
 			var host = new NancyHost(new HostConfiguration() { AllowChunkedEncoding = false, UrlReservations = new UrlReservations() { CreateAutomatically = true } }, new Uri("http://localhost:4321"));
 			host.Start();
 			Console.WriteLine("Hosting on localhost:4321");
@@ -20,4 +21,5 @@ namespace LuminousVector.Aoba.Server
 			host.Dispose();
 		}
 	}
+
 }

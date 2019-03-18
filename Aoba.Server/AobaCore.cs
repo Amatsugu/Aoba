@@ -19,7 +19,7 @@ namespace LuminousVector.Aoba.Server
 	{
 #if !DEBUG
 		public const string BASE_DIR = "/Storage/Aoba/";
-		public const string HOST = "aobacapture.com";
+		public const string HOST = "aoba.app";
 #else
 		public const string HOST = "localhost:4321";
 		public const string BASE_DIR = "M:/Aoba/";

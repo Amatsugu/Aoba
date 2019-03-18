@@ -70,15 +70,15 @@ namespace LuminousVector.Aoba.Models
 					string extChain = "";
 					foreach (string s in exts)
 					{
-						extChain += $"*{s}{(exts.Last() == s ? "" : "; ")}";
+						extChain += $"*{s}{(exts.Last() == s ? "" : ";")}";
 					}
-					string filter = $"{t} ({extChain}) |{extChain}";
+					string filter = $"{t} ({extChain})|{extChain}";
 					if (_filterString == null)
 						_filterString = filter;
 					else
-						_filterString += $" |{filter}";
+						_filterString += $"|{filter}";
 				}
-				_filterString = $"All Files (*.*) | *.* |" + _filterString;
+				_filterString = $"All files (*.*)|*.*|{_filterString}";
 				return _filterString;
 			}
 		}

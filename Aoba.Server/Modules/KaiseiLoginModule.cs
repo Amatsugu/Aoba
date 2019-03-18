@@ -23,8 +23,8 @@ namespace LuminousVector.Aoba.Server.Modules
 			{
 				var authId = this.Bind<Auth>();
 				var kaiseiApi = "http://localhost:6130/app";
-				//var userId = $"{kaiseiApi}/sso/confirm".WithCookie("apiKey", "RaLz1XpKNE6di6Ux_icRRQ").PostJsonAsync(authId).GetAwaiter().GetResult().Content.ReadAsStringAsync().GetAwaiter().GetResult();
-				var userId = "QSYzd0mXAUCyrdXVHNf6jA";
+				var userId = $"{kaiseiApi}/sso/confirm".WithCookie("apiKey", "RaLz1XpKNE6di6Ux_icRRQ").PostJsonAsync(authId).GetAwaiter().GetResult().Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				//var userId = "QSYzd0mXAUCyrdXVHNf6jA";
 				var user = $"{kaiseiApi}/user/{userId}".WithCookie("apiKey", "RaLz1XpKNE6di6Ux_icRRQ").GetJsonAsync().GetAwaiter().GetResult();
 
 				return JsonConvert.SerializeObject(new
