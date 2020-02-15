@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.13
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aoba", "Aoba\Aoba.csproj", "{F41F019E-CFCC-46FE-9361-B9CBB41F21B4}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Models", "DataStore\Models.shproj", "{A5CA15C1-FBF9-47E9-B71D-4B390EC4F8DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aoba.ShellExtensions", "Aoba.ShellExtensions\Aoba.ShellExtensions.csproj", "{C0373B2F-2559-421B-9D6C-B197F2005169}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aoba.Server.Core", "Aoba.Server.Core\Aoba.Server.Core.csproj", "{4DD7C651-F087-43C4-B2BF-5C3B107041C8}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -34,6 +36,10 @@ Global
 		{C0373B2F-2559-421B-9D6C-B197F2005169}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0373B2F-2559-421B-9D6C-B197F2005169}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0373B2F-2559-421B-9D6C-B197F2005169}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DD7C651-F087-43C4-B2BF-5C3B107041C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DD7C651-F087-43C4-B2BF-5C3B107041C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DD7C651-F087-43C4-B2BF-5C3B107041C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DD7C651-F087-43C4-B2BF-5C3B107041C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

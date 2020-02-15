@@ -10,14 +10,14 @@ using System.Security.Principal;
 
 namespace LuminousVector.Aoba.Models
 {
-	public class UserModel : IUserIdentity
+	public class UserModel : ClaimsPrincipal
 	{
 		internal static readonly UserModel Overlord = new UserModel("The Overlord", null, null);
 
 		public string UserName { get; }
 		public string ID { get; }
 
-		public IEnumerable<string> Claims { get; }
+		public new IEnumerable<string> Claims { get; }
 
 		public UserModel(string username, string id, IEnumerable<string> claims = null)
 		{

@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>
+			Aoba | Register
+		</title>
+		<link rel="stylesheet" href="/res/css/main.css"/>
+		<link rel="stylesheet" href="/res/css/window.css"/>
+		<link rel="icon" href="/res/img/Aoba.ico"/>
+		<link rel="shortcut-icon" href="/res/img/Aoba.ico"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" type="text/css" href="/res/css/smallerScreen.css" media="only screen and (max-width: 500px)">
+		<script src="/res/js/jquery-3.1.1.min.js" type="text/javascript"></script>
+		<script src="/res/js/register.js" type="text/javascript"></script>
+	</head>
+	<body>
+		<div id="windowWrapper">
+			<div id="background"></div>
+			<div id="window">
+				<img src="/res/img/Aoba.ico">
+				<h1>Register</h1>
+				<h3>You've been invited by @Model.referer</h3>
+				<form id="login">
+					<label id="formError" class="error" style="display:none"></label><br>
+					<input type="text" placeholder="Username" name="Username" maxlength="128"><br>
+					<input type="password" placeholder="Password" name="Password"><br>
+					<input type="password" placeholder="Confirm" name="Password2"><br>
+					<input type="submit" value="Register">
+				</form>
+			</div>
+		</div>
+	</body>
+</html>
