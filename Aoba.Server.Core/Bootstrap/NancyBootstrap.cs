@@ -5,6 +5,7 @@ using Nancy.TinyIoc;
 using Nancy.Conventions;
 using Nancy.Bootstrapper;
 using Nancy.Authentication.Stateless;
+using Nancy.Configuration;
 
 namespace LuminousVector.Aoba.Server.Bootstrap
 {
@@ -45,6 +46,12 @@ namespace LuminousVector.Aoba.Server.Bootstrap
 			get { return new RootProvider(); }
 		}*/
 #endif
+
+		public override void Configure(INancyEnvironment environment)
+		{
+			environment.Tracing(false, true);
+			base.Configure(environment);
+		}
 
 		protected override void ConfigureConventions(NancyConventions nancyConventions)
 		{
