@@ -40,10 +40,10 @@ namespace LuminousVector.Aoba.Server.Bootstrap
 #endif
 
 #if DEBUG
-		protected override IRootPathProvider RootPathProvider
+		/*protected override IRootPathProvider RootPathProvider
 		{
 			get { return new RootProvider(); }
-		}
+		}*/
 #endif
 
 		protected override void ConfigureConventions(NancyConventions nancyConventions)
