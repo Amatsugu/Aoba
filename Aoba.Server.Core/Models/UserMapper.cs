@@ -1,4 +1,3 @@
-using Nancy.Authentication.Forms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +10,12 @@ using System.Security.Claims;
 
 namespace LuminousVector.Aoba.Server.Models
 {
-	class UserMapper : IUserMapper
+	/*class UserMapper : IUserMapper
 	{
 		public ClaimsPrincipal GetUserFromIdentifier(Guid identifier, NancyContext context)
 		{
 			Console.WriteLine(context.Request.Form.username);
 			return AobaCore.GetUserFromApiKey(identifier.ToString());
 		}
-	}
+	}*/
 }

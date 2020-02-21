@@ -1,7 +1,6 @@
 using System;
 using Nancy;
 using Nancy.Extensions;
-using Nancy.Authentication.Forms;
 using Nancy.ModelBinding;
 using Nancy.ModelBinding.DefaultBodyDeserializers;
 using Nancy.ModelBinding.DefaultConverters;

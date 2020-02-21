@@ -7,6 +7,7 @@ using Nancy.Authentication.Stateless;
 using LuminousVector.Aoba.Server.DataStore;
 using LuminousVector.Aoba.Models;
 using LuminousVector.Aoba.Server.Models;
+using Nancy.Responses;
 
 namespace LuminousVector.Aoba.Server.Modules
 {
@@ -15,8 +16,11 @@ namespace LuminousVector.Aoba.Server.Modules
 		public APIModule() : base("/api")
 		{
 			StatelessAuthentication.Enable(this, AobaCore.StatelessConfig);
-			this.RequiresAuthentication();
-			
+			Before.AddItemToEndOfPipeline(ctx =>
+			{ 
+				return (this.Context.CurrentUser == null) ? new HtmlResponse(HttpStatusCode.Unauthorized) : null;
+			});
+
 			Get("/userStats", _ =>
 			{
 				return Response.AsJson(AobaCore.GetUserStats(((UserModel)Context.CurrentUser).ID));
