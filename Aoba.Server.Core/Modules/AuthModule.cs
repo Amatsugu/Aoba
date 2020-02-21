@@ -22,9 +22,9 @@ namespace LuminousVector.Aoba.Server.Modules
 				if (apiKey == null)
 					return new Response { StatusCode = HttpStatusCode.Unauthorized };
 				if (user.AuthMode == AuthMode.API)
-					return Response.AsJson(new { ApiKey = apiKey });
+					return Response.AsJson(new { jwt = AobaCore.GetJWT(apiKey, 365) });
 				else
-					return new Response().WithCookie("ApiKey", apiKey);
+					return new Response().WithHeader("Authorization", $"Bearer {AobaCore.GetJWT(apiKey)}");
 			});
 
 			Get("/logout", _ =>

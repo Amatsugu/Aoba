@@ -15,7 +15,7 @@ namespace LuminousVector.Aoba.Server.Modules
 			//this.RequiresAuthentication();
 			Get("/",  p =>
 			{
-				var curUser = ((UserModel)Context.CurrentUser)?.UserName;
+				var curUser = ((UserModel)Context.CurrentUser)?.Username;
 				if (curUser == null)
 					return View["login.html"];
 				Console.WriteLine($"User: {curUser}");

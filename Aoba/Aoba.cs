@@ -383,7 +383,12 @@ namespace LuminousVector.Aoba
 				{
 					screenCap.Save(image, Settings.Format);
 					image.Position = 0;
-					var uri = await API_URI.AppendPathSegment("image").Upload(image, fileName, _cookies);
+					var res = await API_URI.AppendPathSegment("image").WithOAuthBearerToken(Settings.AuthToken).PostMultipartAsync(mp =>
+						mp.AddString("name", fileName)
+						.AddFile("file1", image, fileName, MediaModel.GetMediaType(fileName).ToString())
+					);
+					var uri = await res.Content.ReadAsStringAsync();
+						//.Upload(image, fileName, _cookies);
 					UploadSucess(uri);
 				}
 				catch (Exception e)
@@ -412,7 +417,12 @@ namespace LuminousVector.Aoba
 		{
 			try
 			{
-				var uri = await API_URI.AppendPathSegment("image").Upload(file, _cookies, MediaModel.GetMediaType(file));
+				var res = await API_URI.AppendPathSegment("image").WithOAuthBearerToken(Settings.AuthToken).PostMultipartAsync(mp =>
+						mp.AddString("name", Path.GetFileName(file))
+						.AddFile("file1", file, MediaModel.GetMediaType(file).ToString())
+					);
+				var uri = await res.Content.ReadAsStringAsync();
+				//.Upload(file, _cookies, MediaModel.GetMediaType(file));
 				UploadSucess(uri);
 			}
 			catch (Exception ex)
@@ -467,7 +477,7 @@ namespace LuminousVector.Aoba
 		internal static async Task Login()
 		{
 			var token = await AUTH_URI.AppendPathSegment("login").PostJsonAsync(new { Settings.Username, Settings.Password, AuthMode = "API" }).ReceiveJson<AuthToken>();
-			Settings.AuthToken = token.ApiKey;
+			Settings.AuthToken = token.JWT;
 			CreateCookie();
 		}
 
@@ -475,7 +485,7 @@ namespace LuminousVector.Aoba
 		{
 			try
 			{
-				UserStats = await API_URI.AppendPathSegment("userStats").WithCookie("ApiKey", Settings.AuthToken).GetJsonAsync<UserStatsModel>();
+				UserStats = await API_URI.AppendPathSegment("userStats").WithOAuthBearerToken(Settings.AuthToken).GetJsonAsync<UserStatsModel>();
 
 			}catch(Exception e)
 			{

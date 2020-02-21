@@ -9,14 +9,14 @@ namespace LuminousVector.Aoba.Server.Modules
 	{
 		public RegistrationModule() : base("register")
 		{
-			Get("/{token}", p =>
+			base.Get("/{token}", (Func<dynamic, object>)(p =>
 			{
 				var referer = AobaCore.ValidateRegistrationToken(((string)p.token).Replace(' ', '+'));
 				if (referer == null || referer == UserModel.Overlord)
 					return new Response { StatusCode = HttpStatusCode.Unauthorized };
 				else
-					return View["register", new { referer = referer.UserName}];
-			});
+					return View["register", new { referer = referer.Username}];
+			}));
 
 			Post("/{token}", p =>
 			{

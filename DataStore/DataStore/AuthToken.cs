@@ -8,6 +8,6 @@ namespace LuminousVector.Aoba.Models
 {
 	public class AuthToken
 	{
-		public string ApiKey { get; set; }
+		public string JWT { get; set; }
 	}
 }

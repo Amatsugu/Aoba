@@ -14,16 +14,15 @@ namespace LuminousVector.Aoba.Models
 	{
 		internal static readonly UserModel Overlord = new UserModel("The Overlord", null, null);
 
-		public string UserName { get; }
-		public string ID { get; }
 
-		public new IEnumerable<string> Claims { get; }
+		public string Username { get; }
+
+		public string ID { get; }
 
 		public UserModel(string username, string id, IEnumerable<string> claims = null)
 		{
-			UserName = username;
+			Username = username;
 			ID = id;
-			Claims = claims;
 		}
 
 

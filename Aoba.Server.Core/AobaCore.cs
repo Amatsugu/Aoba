@@ -12,6 +12,9 @@ using MongoDB.Bson;
 using MongoDB.Driver.GridFS;
 using System.IO;
 using LuminousVector.Aoba.DataStore;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace LuminousVector.Aoba.Server
 {
@@ -91,12 +94,76 @@ namespace LuminousVector.Aoba.Server
 			internal static IMongoCollection<BsonDocument> media;
 		}
 
+		private static byte[] JWTKey
+		{
+			get
+			{
+				if (_jwtKey == null)
+					return _jwtKey = GenetateJWTKey();
+				else
+					return _jwtKey;
+			}
+		}
+
+		private static byte[] _jwtKey;
+
 
 		internal static StatelessAuthenticationConfiguration StatelessConfig { get; private set; } = new StatelessAuthenticationConfiguration(nancyContext =>
 		{
-				string ApiKey = nancyContext.Request.Cookies.FirstOrDefault(c => c.Key == "ApiKey").Value;
-				return GetUserFromApiKey(ApiKey); 
+			var jwt = nancyContext.Request.Headers.Authorization;
+			return ValidateJWT(jwt.Remove(0, "Bearer ".Length));
+
+			/*string ApiKey = nancyContext.Request.Cookies.FirstOrDefault(c => c.Key == "ApiKey").Value;
+			return GetUserFromApiKey(ApiKey); */
 		});
+
+		private static byte[] GenetateJWTKey()
+		{
+			var key = new byte[64];
+			using(var rng = new RNGCryptoServiceProvider())
+			{
+				rng.GetBytes(key);
+			}
+			return key;
+		}
+
+		internal static string GetJWT(string apiKey, int durationDays = 7)
+		{
+			var handler = new JwtSecurityTokenHandler();
+			var token = handler.CreateToken(new SecurityTokenDescriptor
+			{
+				Issuer = "Aoba.app",
+				Audience = "Aoba",
+				Expires = DateTime.UtcNow.AddDays(durationDays),
+				Subject = new ClaimsIdentity(new[]
+				{
+					new Claim(ClaimTypes.Authentication, apiKey)
+				}),
+				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(JWTKey), SecurityAlgorithms.HmacSha256Signature, SecurityAlgorithms.Sha512Digest)
+			});
+			return handler.WriteToken(token);
+		}
+
+		internal static UserModel ValidateJWT(string token)
+		{
+			var handler = new JwtSecurityTokenHandler();
+			SecurityToken validatedToken;
+			var validation = new TokenValidationParameters
+			{
+				ClockSkew = TimeSpan.FromMinutes(1),
+				ValidIssuer = "Aoba.app",
+				ValidAudience = "Aoba",
+				IssuerSigningKey = new SymmetricSecurityKey(JWTKey)
+			};
+			try
+			{
+				var claim = handler.ValidateToken(token, validation ,out validatedToken);
+				return GetUserFromApiKey(claim.Claims.First().Value);
+			}catch
+			{
+				return null;
+			}
+		}
 
 		internal static string HashPassword(string password)
 		{
