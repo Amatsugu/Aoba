@@ -14,7 +14,7 @@ namespace LuminousVector.Aoba.Server.Bootstrap
 		{
 			var curDir = Directory.GetCurrentDirectory();
 			
-			curDir = Directory.GetParent(curDir).Parent.Parent.FullName;
+			curDir = Directory.GetParent(curDir).FullName;
 			Console.WriteLine($"Root: {curDir}");
 			return curDir;
 		}
