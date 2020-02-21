@@ -36,7 +36,8 @@ namespace LuminousVector.Aoba.Server.Modules
 			Post("/register/{token}", p =>
 			{
 				LoginCredentialsModel user = this.Bind<LoginCredentialsModel>();
-				if (AobaCore.RegisterUser(user, ((string)p.token).Replace(' ', '+')))
+				var token = (string)p.token;
+				if (!string.IsNullOrWhiteSpace(token) && AobaCore.RegisterUser(user, token.Replace(' ', '+')))
 				{
 					return new Response { StatusCode = HttpStatusCode.OK };
 				}

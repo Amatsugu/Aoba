@@ -21,8 +21,11 @@ namespace LuminousVector.Aoba.Server.Modules
 			Post("/{token}", p =>
 			{
 				var userInfo = this.Bind<LoginCredentialsModel>();
-				if (AobaCore.RegisterUser(userInfo, ((string)p.token).Replace(' ', '+')))
+				var token = (string)p.token;
+				if (!string.IsNullOrWhiteSpace(token) && AobaCore.RegisterUser(userInfo, token.Replace(' ', '+')))
+				{
 					return new Response { StatusCode = HttpStatusCode.OK };
+				}
 				else
 					return new Response { StatusCode = HttpStatusCode.Unauthorized };
 			});

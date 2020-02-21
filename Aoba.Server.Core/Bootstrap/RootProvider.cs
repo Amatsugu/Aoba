@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace LuminousVector.Aoba.Server.Bootstrap
 {
-#if DEBUG
+#if false
 	public class RootProvider : IRootPathProvider
 	{
 		public string GetRootPath()

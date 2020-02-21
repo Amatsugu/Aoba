@@ -190,12 +190,20 @@ namespace LuminousVector.Aoba.Server
 			return apiKey;
 		}
 
-		internal static bool RegisterUser(LoginCredentialsModel login, string token)
+		internal static bool RegisterUser(LoginCredentialsModel login, string token = null)
 		{
-			token = Sanitize(token);
+			bool requireToken = true;
+			if (token == null)
+				requireToken = false;
+			if(requireToken)
+				token = Sanitize(token);
 			try
 			{
-				var referer = ValidateRegistrationToken(token);
+				UserModel referer = null;
+				if (requireToken)
+					ValidateRegistrationToken(token);
+				else
+					referer = new UserModel(login.Username, "");
 				if (referer != null)
 				{
 					var userID = GetNewID();
@@ -209,7 +217,8 @@ namespace LuminousVector.Aoba.Server
 						{ "regTokens", new BsonArray(new string[0]) },
 					};
 					Users.InsertOne(newUser);
-					RemoveRegToken(token);
+					if(requireToken)
+						RemoveRegToken(token);
 					return true;
 				}
 				return false;
@@ -267,6 +276,34 @@ namespace LuminousVector.Aoba.Server
 			return $"{HOST}/i/{media.id}";
 		}
 
+		internal static void RebuildDB(string userID)
+		{
+			DBClient.ListDatabaseNames().ForEachAsync(s => Console.WriteLine(s));
+			var files = Directory.GetFiles(BASE_DIR, "", SearchOption.AllDirectories);
+			Console.WriteLine(files.Length);
+			for (int i = 0; i < files.Length; i++)
+			{
+				var media = new MediaModel
+				{
+					id = Path.GetFileNameWithoutExtension(files[i]),
+					fileName = Path.GetFileName(files[i]),
+					type = MediaModel.GetMediaType(files[i])
+				};
+				Console.WriteLine($"Writing to DB: {media.id} | {media.type} ");
+				Media.InsertOne(new BsonDocument
+				{
+					{ "id", media.id },
+					{ "type", media.type },
+					//{ "media", (useDB ? mediaId : BsonValue.Create(null) )},
+					{ "mediaUri",  $"{media.type.ToString()}/{media.fileName}" },
+					//{ "mediaBin", (useDB ? BsonValue.Create(null) : new BsonBinaryData(StreamToByteA(media.mediaStream))) },
+					{ "fileName", media.fileName },
+					{ "owner", userID },
+					{ "views", 0 }
+				});
+			}
+			Console.ReadLine();
+		}
 
 		private static byte[] StreamToByteA(Stream stream)
 		{
@@ -319,7 +356,7 @@ namespace LuminousVector.Aoba.Server
 
 		internal static UserStatsModel GetUserStats(string userid) => new UserStatsModel
 		{
-			screenShotCount = (int)Media.Count("{ owner : '" + Sanitize(userid) + "'}")
+			screenShotCount = (int)Media.Find("{ owner : '" + Sanitize(userid) + "'}").CountDocuments()
 		};
 
 		internal static void IncrementViewCount(string id)
