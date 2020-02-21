@@ -55,7 +55,6 @@ namespace LuminousVector.Aoba
 		private static string API_URI = $"{HOST}/api";
 		private static string AUTH_URI = $"{HOST}/auth";
 		private static Settings _settings;
-		private static CookieContainer _cookies;
 		private static SoundPlayer _successSound;
 		private static SoundPlayer _failedSound;
 		private static string _clickUri = null;
@@ -101,10 +100,6 @@ namespace LuminousVector.Aoba
 				_settings = Settings.Default;
 				Debug.WriteLine(e.Message);
 				Debug.WriteLine(e.StackTrace);
-			}
-			if (Settings.HasAuth)
-			{
-				CreateCookie();
 			}
 
 			//Sounds
@@ -227,12 +222,6 @@ namespace LuminousVector.Aoba
 					}
 				}
 			};
-		}
-
-		internal static void CreateCookie()
-		{
-			_cookies = new CookieContainer();
-			_cookies.Add(new Uri(API_URI), new Cookie("ApiKey", Settings.AuthToken));
 		}
 
 		internal static void InstallContextMenu()
@@ -385,7 +374,7 @@ namespace LuminousVector.Aoba
 					image.Position = 0;
 					var res = await API_URI.AppendPathSegment("image").WithOAuthBearerToken(Settings.AuthToken).PostMultipartAsync(mp =>
 						mp.AddString("name", fileName)
-						.AddFile("file1", image, fileName, MediaModel.GetMediaType(fileName).ToString())
+						.AddFile("file1", image, fileName)
 					);
 					var uri = await res.Content.ReadAsStringAsync();
 						//.Upload(image, fileName, _cookies);
@@ -419,7 +408,7 @@ namespace LuminousVector.Aoba
 			{
 				var res = await API_URI.AppendPathSegment("image").WithOAuthBearerToken(Settings.AuthToken).PostMultipartAsync(mp =>
 						mp.AddString("name", Path.GetFileName(file))
-						.AddFile("file1", file, MediaModel.GetMediaType(file).ToString())
+						.AddFile("file1", file)
 					);
 				var uri = await res.Content.ReadAsStringAsync();
 				//.Upload(file, _cookies, MediaModel.GetMediaType(file));
@@ -478,7 +467,6 @@ namespace LuminousVector.Aoba
 		{
 			var token = await AUTH_URI.AppendPathSegment("login").PostJsonAsync(new { Settings.Username, Settings.Password, AuthMode = "API" }).ReceiveJson<AuthToken>();
 			Settings.AuthToken = token.JWT;
-			CreateCookie();
 		}
 
 		internal static async Task UpdateStats()

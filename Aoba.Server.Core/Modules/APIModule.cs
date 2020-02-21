@@ -44,7 +44,7 @@ namespace LuminousVector.Aoba.Server.Modules
 					var media = new MediaModel
 					{
 						//uri = $"/{fileNmae}",
-						type = (MediaModel.MediaType)Enum.Parse(typeof(MediaModel.MediaType), f.ContentType),
+						type = MediaModel.GetMediaType(f.Name),
 						mediaStream = f.Value,
 						fileName = f.Name
 						//Ext = Path.GetExtension(fileName)
