@@ -23,6 +23,7 @@ using LuminousVector.Aoba.Keyboard;
 using IWshRuntimeLibrary;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Windows.Interop;
 
 namespace LuminousVector.Aoba
 {
@@ -37,6 +38,11 @@ namespace LuminousVector.Aoba
 		private bool willExit = true;
 #endif
 		private System.Windows.Forms.ContextMenu _contextMenu;
+		private const int WM_CLIPBOARDUPDATE = 0x031D;
+
+		private IntPtr windowHandle;
+
+		public event EventHandler ClipboardUpdate;
 
 		public MainWindow()
 		{
@@ -74,7 +80,85 @@ namespace LuminousVector.Aoba
 			});
 			Aoba.TrayIcon.ContextMenu = _contextMenu;
 			Aoba.TrayIcon.DoubleClick += RestoreWindow;
+
+			ClipboardUpdate += MainWindow_ClipboardUpdate;
 		}
+
+		private void MainWindow_ClipboardUpdate(object sender, EventArgs e)
+		{
+			if(Clipboard.ContainsImage() && Aoba.Settings.AutoUploadFromClipboard)
+			{
+				var src = Clipboard.GetImage();
+				var bitmap = new Bitmap(src.PixelWidth, src.PixelHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				var bitmapData = bitmap.LockBits(new System.Drawing.Rectangle(System.Drawing.Point.Empty, bitmap.Size), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				src.CopyPixels(Int32Rect.Empty, bitmapData.Scan0, bitmapData.Height * bitmapData.Stride, bitmapData.Stride);
+				bitmap.UnlockBits(bitmapData);
+				Aoba.PublishScreen(bitmap);
+			}
+		}
+
+		#region Clipboard Monitoring
+		protected override void OnInitialized(EventArgs e)
+		{
+			base.OnInitialized(e);
+
+			windowHandle = new WindowInteropHelper(this).EnsureHandle();
+			HwndSource.FromHwnd(windowHandle)?.AddHook(HwndHandler);
+			Start();
+		}
+
+		public static readonly DependencyProperty ClipboardUpdateCommandProperty =
+			DependencyProperty.Register("ClipboardUpdateCommand", typeof(ICommand), typeof(MainWindow), new FrameworkPropertyMetadata(null));
+
+		public ICommand ClipboardUpdateCommand
+		{
+			get { return (ICommand)GetValue(ClipboardUpdateCommandProperty); }
+			set { SetValue(ClipboardUpdateCommandProperty, value); }
+		}
+
+		protected virtual void OnClipboardUpdate()
+		{ }
+
+		public void Start()
+		{
+			NativeMethods.AddClipboardFormatListener(windowHandle);
+		}
+
+		public void Stop()
+		{
+			NativeMethods.RemoveClipboardFormatListener(windowHandle);
+		}
+
+		private IntPtr HwndHandler(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
+		{
+			if (msg == WM_CLIPBOARDUPDATE)
+			{
+				// fire event
+				this.ClipboardUpdate?.Invoke(this, new EventArgs());
+				// execute command
+				if (this.ClipboardUpdateCommand?.CanExecute(null) ?? false)
+				{
+					this.ClipboardUpdateCommand?.Execute(null);
+				}
+				// call virtual method
+				OnClipboardUpdate();
+			}
+			handled = false;
+			return IntPtr.Zero;
+		}
+
+
+		private static class NativeMethods
+		{
+			[DllImport("user32.dll", SetLastError = true)]
+			[return: MarshalAs(UnmanagedType.Bool)]
+			public static extern bool AddClipboardFormatListener(IntPtr hwnd);
+
+			[DllImport("user32.dll", SetLastError = true)]
+			[return: MarshalAs(UnmanagedType.Bool)]
+			public static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
+		}
+		#endregion
 
 		private void Load()
 		{
@@ -103,6 +187,11 @@ namespace LuminousVector.Aoba
 			//Tray
 			CloseToTray.IsChecked = Aoba.Settings.CloseToTray;
 			StartInTray.IsChecked = Aoba.Settings.StartInTray;
+			//In-Game
+			GameCapture.IsChecked = Aoba.Settings.GameCapture;
+			ShowFPS.IsChecked = Aoba.Settings.ShowFPS;
+			//Misc
+			ClipboardAutoUpload.IsChecked = Aoba.Settings.AutoUploadFromClipboard;
 			//Account
 			if (Aoba.Settings.HasAuth)
 				ShowLoggedIn();
@@ -142,6 +231,12 @@ namespace LuminousVector.Aoba
 			//Tray
 			Aoba.Settings.CloseToTray = (CloseToTray.IsChecked == null) ? false : (bool)CloseToTray.IsChecked;
 			Aoba.Settings.StartInTray = (StartInTray.IsChecked == null) ? false : (bool)StartInTray.IsChecked;
+			//In-Game
+			Aoba.Settings.ShowFPS = (ShowFPS.IsChecked == null) ? false : (bool)ShowFPS.IsChecked;
+			Aoba.Settings.GameCapture = (GameCapture.IsChecked == null) ? false : (bool)GameCapture.IsChecked;
+			//Misc
+			Aoba.Settings.AutoUploadFromClipboard = (ClipboardAutoUpload.IsChecked == null) ? false : (bool)ClipboardAutoUpload.IsChecked;
+
 			Aoba.Save();
 		}
 

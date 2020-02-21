@@ -48,6 +48,9 @@ namespace LuminousVector.Aoba.DataStore
 					SaveCopy = false,
 					CloseToTray = true,
 					StartInTray = false,
+					GameCapture = false,
+					ShowFPS = false,
+					AutoUploadFromClipboard = false,
 					SaveLocation = $@"{Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)}\Aoba",
 					FullscreenCapture = FullscreenCaptureMode.CursorScreen,
 					Shortcuts = new List<KeybaordShortcut>()
@@ -104,6 +107,12 @@ namespace LuminousVector.Aoba.DataStore
 		public bool CloseToTray { get; set; }
 		public bool StartInTray { get; set; }
 
+		//In-Game
+		public bool ShowFPS { get; set; }
+		public bool GameCapture { get; set; }
+		//Misc
+		public bool AutoUploadFromClipboard { get; set; }
+
 		public static Settings Load(string file)
 		{
 			try
@@ -116,8 +125,8 @@ namespace LuminousVector.Aoba.DataStore
 			}
 		}
 
-		public void Save(string file) => File.WriteAllText(file, JsonConvert.SerializeObject(this));
 
+		public void Save(string file) => File.WriteAllText(file, JsonConvert.SerializeObject(this));
 
 	}
 }

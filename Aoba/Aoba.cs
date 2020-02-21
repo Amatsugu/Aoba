@@ -163,7 +163,7 @@ namespace LuminousVector.Aoba
 			KeyHandler.RegisterEventTarget("Upload File", ShowUploadWindow);
 			//Region Capture
 			RegisterRegionCapture();
-
+			
 		}
 #region Initialization
 
@@ -304,22 +304,26 @@ namespace LuminousVector.Aoba
 #region Capture Window
 		public static void CaptureWindow()
 		{
-			var process = Process.GetProcessById(ScreenCapture.GetForgroundWindowId());
 			ScreenCapture.GetWindowRect(ScreenCapture.GetForegroundWindow(), out WindowRect rect);
-			if (_curHook == null || _curHook.Process.Id != process.Id)
+			if (Settings.GameCapture)
 			{
-				if(_curHook != null)
-					_curHook.Dispose();
-				_curHook = null;
-				var captureI = new CaptureInterface();
-				captureI.RemoteMessage += CaptureI_RemoteMessage;
-				try
+				var process = Process.GetProcessById(ScreenCapture.GetForgroundWindowId());
+				if (_curHook == null || _curHook.Process.Id != process.Id)
 				{
-					_curHook = new CaptureProcess(process, d3dCapConfig, captureI);
-					Thread.Sleep(10);
-				}catch
-				{
+					if (_curHook != null)
+						_curHook.Dispose();
 					_curHook = null;
+					var captureI = new CaptureInterface();
+					captureI.RemoteMessage += CaptureI_RemoteMessage;
+					try
+					{
+						_curHook = new CaptureProcess(process, d3dCapConfig, captureI);
+						Thread.Sleep(10);
+					}
+					catch
+					{
+						_curHook = null;
+					}
 				}
 			}
 			Bitmap screenCap;
@@ -361,7 +365,7 @@ namespace LuminousVector.Aoba
 #endregion
 
 
-		private static async void PublishScreen(Image screenCap)
+		public static async void PublishScreen(Image screenCap)
 		{
 			var ext = (Settings.Format == System.Drawing.Imaging.ImageFormat.Png) ? ".png" : ".jpg";
 			var fileName = $"{Guid.NewGuid().ToString().Replace("-", "")}{ext}";

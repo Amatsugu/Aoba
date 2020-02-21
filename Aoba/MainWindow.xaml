@@ -34,7 +34,7 @@
 								</Grid.ColumnDefinitions>
 								<StackPanel Grid.Column="0">
 									<CheckBox x:Name="ToastAll" Content="Show notification toasts" Click="ToastAll_Click" IsChecked="True"/>
-									<GroupBox x:Name="ToastBox" Header="Toasts" Padding="5 0 0 0">
+									<GroupBox x:Name="ToastBox" Header="Toasts" Padding="5 0 0 0">   
 										<StackPanel>
 											<CheckBox x:Name="ToastSuccess" Content="Upload Success Notifications" IsChecked="True" Click="DataUpdated"/>
 											<CheckBox x:Name="ToastFailed" Content="Upload Failed Notifications" IsChecked="True" Click="DataUpdated"/>
@@ -168,8 +168,14 @@
 					<Border Padding="5">
 						<StackPanel>
 							<GroupBox Header="In Game" Padding="5">
-								<StackPanel IsEnabled="False">
-									<CheckBox Content="Show FPS (NYI)" IsChecked="False" Click="DataUpdated"/>
+								<StackPanel IsEnabled="True">
+									<CheckBox x:Name="ShowFPS" IsEnabled="False" Content="Show FPS (NYI)" IsChecked="False" Click="DataUpdated"/>
+									<CheckBox x:Name="GameCapture" Content="Game Capture (WIP)" IsChecked="False" Click="DataUpdated"/>
+								</StackPanel>
+							</GroupBox>
+							<GroupBox Header="Misc" Padding="5">
+								<StackPanel IsEnabled="True">
+									<CheckBox x:Name="ClipboardAutoUpload" Content="Auto Upload From Clipboard" IsChecked="False" Click="DataUpdated"/>
 								</StackPanel>
 							</GroupBox>
 						</StackPanel>
