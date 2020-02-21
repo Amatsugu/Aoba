@@ -40,12 +40,10 @@ namespace LuminousVector.Aoba.Server.Bootstrap
 		}
 #endif
 
-#if DEBUG
-		/*protected override IRootPathProvider RootPathProvider
+		protected override IRootPathProvider RootPathProvider
 		{
 			get { return new RootProvider(); }
-		}*/
-#endif
+		}
 
 		public override void Configure(INancyEnvironment environment)
 		{

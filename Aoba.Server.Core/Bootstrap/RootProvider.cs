@@ -8,17 +8,15 @@ using System.Threading.Tasks;
 
 namespace LuminousVector.Aoba.Server.Bootstrap
 {
-#if false
 	public class RootProvider : IRootPathProvider
 	{
 		public string GetRootPath()
 		{
 			var curDir = Directory.GetCurrentDirectory();
 			
-			curDir = curDir.Replace(@"bin\Debug", "");
-
+			curDir = Directory.GetParent(curDir).Parent.Parent.FullName;
+			Console.WriteLine($"Root: {curDir}");
 			return curDir;
 		}
 	}
-#endif
 }
