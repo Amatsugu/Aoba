@@ -138,8 +138,8 @@ namespace LuminousVector.Aoba.Server
 				return null;
 			apiKey = Sanitize(apiKey);
 			//var user = Users.Find(u => u.GetValue("apiKeys").AsBsonArray.Contains(apiKey)).First();
-			var user = Users.Find("{ 'apiKeys' : '" + apiKey + "' }").First();
-			if (user.IsBsonNull)
+			var user = Users.Find("{ 'apiKeys' : '" + apiKey + "' }").FirstOrDefault();
+			if (user == null || user.IsBsonNull)
 				return null;
 			var um = new UserModel(user.GetValue("username").AsString, user.GetValue("id").AsString, user.GetValue("claims").AsBsonArray.Select(c => c.AsString));
 			return um;
@@ -147,8 +147,8 @@ namespace LuminousVector.Aoba.Server
 
 		internal static UserModel GetUser(string id)
 		{
-			var user = Users.Find("{ id : '" + id + "'}").First();
-			if (user.IsBsonNull)
+			var user = Users.Find("{ id : '" + id + "'}").FirstOrDefault();
+			if (user == null || user.IsBsonNull)
 				return null;
 			return new UserModel(user.GetValue("username").AsString, user.GetValue("id").AsString, user.GetValue("claims").AsBsonArray.Select(c => c.AsString));
 		}
@@ -157,8 +157,8 @@ namespace LuminousVector.Aoba.Server
 		{
 			login.Username = Sanitize(login.Username);
 			//var userInfo = Users.Find(u => u.GetValue("username").Equals(login.Username)).First();
-			var userInfo = Users.Find("{ username : '" + login.Username + "'}").First();
-			if (userInfo.IsBsonNull)
+			var userInfo = Users.Find("{ username : '" + login.Username + "'}").FirstOrDefault();
+			if (userInfo == null || userInfo.IsBsonNull)
 				return null;
 			if (VerifyPassword(login.Password, userInfo.GetValue("passHash").AsString))
 				return GetApiKey(userInfo.GetValue("id").AsString);
@@ -167,8 +167,8 @@ namespace LuminousVector.Aoba.Server
 
 		internal static string GetApiKey(string userId)
 		{
-			var user = Users.Find("{ id : '" + userId + "'}").First();
-			if (user.IsBsonNull)
+			var user = Users.Find("{ id : '" + userId + "'}").FirstOrDefault();
+			if (user == null || user.IsBsonNull)
 				return null;
 			var apiKey = user.GetValue("apiKeys").AsBsonArray.FirstOrDefault()?.AsString;
 			if (string.IsNullOrWhiteSpace(apiKey))
