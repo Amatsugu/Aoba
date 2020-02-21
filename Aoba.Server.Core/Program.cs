@@ -12,7 +12,7 @@ namespace LuminousVector.Aoba.Server
 			host.Start();
 			Console.WriteLine(Directory.GetCurrentDirectory());
 			Console.WriteLine("Hosting on localhost:4321");
-			
+			Console.ReadLine();
 			host.Dispose();
 		}
 	}
