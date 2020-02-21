@@ -111,7 +111,16 @@ namespace LuminousVector.Aoba.Server
 		internal static StatelessAuthenticationConfiguration StatelessConfig { get; private set; } = new StatelessAuthenticationConfiguration(nancyContext =>
 		{
 			var jwt = nancyContext.Request.Headers.Authorization;
+			if (string.IsNullOrWhiteSpace(jwt))
+				return null;
+			try
+			{
+
 			return ValidateJWT(jwt.Remove(0, "Bearer ".Length));
+			}catch
+			{
+				return null;
+			}
 
 			/*string ApiKey = nancyContext.Request.Cookies.FirstOrDefault(c => c.Key == "ApiKey").Value;
 			return GetUserFromApiKey(ApiKey); */
