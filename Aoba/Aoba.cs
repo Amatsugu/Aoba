@@ -376,6 +376,7 @@ namespace LuminousVector.Aoba
 						mp.AddString("name", fileName)
 						.AddFile("file1", image, fileName)
 					);
+					Settings.AuthToken = res.GetHeaderValue("Authorization").Remove(0, "Bearer ".Length);
 					var uri = await res.Content.ReadAsStringAsync();
 						//.Upload(image, fileName, _cookies);
 					UploadSucess(uri);
@@ -410,6 +411,7 @@ namespace LuminousVector.Aoba
 						mp.AddString("name", Path.GetFileName(file))
 						.AddFile("file1", file)
 					);
+				Settings.AuthToken = res.GetHeaderValue("Authorization").Remove(0, "Bearer ".Length);
 				var uri = await res.Content.ReadAsStringAsync();
 				//.Upload(file, _cookies, MediaModel.GetMediaType(file));
 				UploadSucess(uri);

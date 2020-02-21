@@ -17,13 +17,14 @@ namespace LuminousVector.Aoba.Server.Modules
 		{
 			StatelessAuthentication.Enable(this, AobaCore.StatelessConfig);
 			Before.AddItemToEndOfPipeline(ctx =>
-			{ 
+			{
 				return (this.Context.CurrentUser == null) ? new HtmlResponse(HttpStatusCode.Unauthorized) : null;
 			});
 
 			Get("/userStats", _ =>
 			{
-				return Response.AsJson(AobaCore.GetUserStats(((UserModel)Context.CurrentUser).ID));
+				var uid = ((UserModel)Context.CurrentUser).ID;
+				return Response.AsJson(AobaCore.GetUserStats(uid)).WithHeader("Authorization", $"Bearer {AobaCore.GetJWT(AobaCore.GetApiKey(uid), 365)}");
 			});
 
 			Get("/", _ =>
@@ -38,8 +39,8 @@ namespace LuminousVector.Aoba.Server.Modules
 					var f = Context.Request.Files.First();
 					//using (FileStream file = new FileStream($"{AobaCore.MEDIA_DIR}/{fileNmae}", FileMode.CreateNew))
 					//{
-						//f.Value.CopyTo(file);
-						//file.Flush();
+					//f.Value.CopyTo(file);
+					//file.Flush();
 					//}
 					var media = new MediaModel
 					{
@@ -51,12 +52,13 @@ namespace LuminousVector.Aoba.Server.Modules
 					};
 					media.mediaStream.Position = 0;
 					//f.Value.Read(media.media, 0, (int)f.Value.Length);
-					return AobaCore.AddMedia(((UserModel)Context.CurrentUser).ID, media);
+					var uid = ((UserModel)Context.CurrentUser).ID;
+					return Response.AsText(AobaCore.AddMedia(uid, media)).WithHeader("Authorization", $"Bearer {AobaCore.GetJWT(AobaCore.GetApiKey(uid), 365)}");
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					Console.WriteLine(e.StackTrace);
-					return new Response() { StatusCode = HttpStatusCode.ImATeapot};
+					return new Response() { StatusCode = HttpStatusCode.ImATeapot };
 				}
 			});
 		}
