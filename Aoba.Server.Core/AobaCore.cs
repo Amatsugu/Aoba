@@ -365,11 +365,7 @@ namespace LuminousVector.Aoba.Server
 				{ "owner", userId },
 				{ "views", 0 }
 			});
-			if (media.type == MediaModel.MediaType.Raw)
-				return $"{HOST}/i/raw/{media.id}/{media.fileName}";
-			if (media.Ext == ".gif")
-				return $"{HOST}/i/raw/{media.id}/{media.fileName}";
-			return $"{HOST}/i/{media.id}";
+			return media.id;
 		}
 
 		internal static void DeleteImage(string id)

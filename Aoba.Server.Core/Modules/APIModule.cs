@@ -38,20 +38,12 @@ namespace LuminousVector.Aoba.Server.Modules
 				try
 				{
 					var f = Context.Request.Files.First();
-					//using (FileStream file = new FileStream($"{AobaCore.MEDIA_DIR}/{fileNmae}", FileMode.CreateNew))
-					//{
-					//f.Value.CopyTo(file);
-					//file.Flush();
-					//}
 					var media = new MediaModel
 					{
-						//uri = $"/{fileNmae}",
 						type = MediaModel.GetMediaType(f.Name),
 						mediaStream = f.Value,
 						fileName = f.Name
-						//Ext = Path.GetExtension(fileName)
 					};
-
 
 					media.mediaStream.Position = 0;
 					if (string.IsNullOrEmpty(media.Ext))
@@ -60,9 +52,24 @@ namespace LuminousVector.Aoba.Server.Modules
 						media.fileName = $"{media.fileName}{ext}";
 						media.type = MediaModel.GetMediaType(ext);
 					}
-					//f.Value.Read(media.media, 0, (int)f.Value.Length);
 					var uid = ((UserModel)Context.CurrentUser).ID;
-					return Response.AsText(AobaCore.AddMedia(uid, media)).WithHeader("Authorization", $"Bearer {AobaCore.GetJWT(AobaCore.GetApiKey(uid), 365)}");
+					AobaCore.AddMedia(uid, media);
+					var response = string.Empty;
+					if (media.type == MediaModel.MediaType.Raw)
+						response = $"{AobaCore.HOST}/i/raw/{media.id}/{media.fileName}";
+					else if (media.Ext == ".gif")
+						response =$"{AobaCore.HOST}/i/raw/{media.id}/{media.fileName}";
+					else
+						response = $"{AobaCore.HOST}/i/{media.id}";
+					if(Context.Request.Headers.AcceptEncoding.Contains("JSON"))
+					{
+						return Response.AsJson(new
+						{
+							id = media.id,
+							url = response
+						});
+					}
+					return Response.AsText(response).WithHeader("Authorization", $"Bearer {AobaCore.GetJWT(AobaCore.GetApiKey(uid), 365)}");
 				}
 				catch (Exception e)
 				{
