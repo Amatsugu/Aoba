@@ -55,7 +55,11 @@ namespace LuminousVector.Aoba.Server.Modules
 
 					media.mediaStream.Position = 0;
 					if (string.IsNullOrEmpty(media.Ext))
-						media.fileName = $"{media.fileName}{GetImageExt(media.mediaStream)}";
+					{
+						var ext = GetImageExt(media.mediaStream);
+						media.fileName = $"{media.fileName}{ext}";
+						media.type = MediaModel.GetMediaType(ext);
+					}
 					//f.Value.Read(media.media, 0, (int)f.Value.Length);
 					var uid = ((UserModel)Context.CurrentUser).ID;
 					return Response.AsText(AobaCore.AddMedia(uid, media)).WithHeader("Authorization", $"Bearer {AobaCore.GetJWT(AobaCore.GetApiKey(uid), 365)}");
