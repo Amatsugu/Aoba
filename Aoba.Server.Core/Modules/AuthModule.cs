@@ -24,12 +24,15 @@ namespace LuminousVector.Aoba.Server.Modules
 				if (user.AuthMode == AuthMode.API)
 					return Response.AsJson(new { jwt = AobaCore.GetJWT(apiKey, 365) });
 				else
-					return new Response().WithHeader("Authorization", $"Bearer {AobaCore.GetJWT(apiKey)}");
+				{
+					var token = AobaCore.GetJWT(apiKey);
+					return new Response().WithHeader("Authorization", $"Bearer {token}").WithCookie("token", token);
+				}	
 			});
 
 			Get("/logout", _ =>
 			{
-				return new Response().WithCookie("ApiKey", "");
+				return new Response().WithCookie("token", "");
 			});
 
 			Post("/register/{token}", p =>

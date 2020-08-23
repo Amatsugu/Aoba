@@ -15,6 +15,7 @@ using LuminousVector.Aoba.DataStore;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace LuminousVector.Aoba.Server
 {
@@ -114,7 +115,12 @@ namespace LuminousVector.Aoba.Server
 		{
 			var jwt = nancyContext.Request.Headers.Authorization;
 			if (string.IsNullOrWhiteSpace(jwt))
-				return null;
+			{
+				if (nancyContext.Request.Cookies.ContainsKey("token"))
+					jwt = $"Bearer {nancyContext.Request.Cookies["token"]}";
+				else
+					return null;
+			};
 			try
 			{
 
@@ -130,11 +136,18 @@ namespace LuminousVector.Aoba.Server
 
 		private static byte[] GenetateJWTKey()
 		{
+			var dir = $"{BASE_DIR}JWT/";
+			var file = $"{dir}secret.txt";
+			if (File.Exists(file))
+				return Encoding.ASCII.GetBytes(File.ReadAllText(file));
 			var key = new byte[64];
 			using(var rng = new RNGCryptoServiceProvider())
 			{
 				rng.GetBytes(key);
 			}
+			if (!Directory.Exists(dir))
+				Directory.CreateDirectory(dir);
+			File.WriteAllText(file, Encoding.ASCII.GetString(key));
 			return key;
 		}
 
@@ -150,7 +163,7 @@ namespace LuminousVector.Aoba.Server
 				{
 					new Claim(ClaimTypes.Authentication, apiKey)
 				}),
-				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(JWTKey), SecurityAlgorithms.HmacSha256Signature, SecurityAlgorithms.Sha512Digest)
+				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(JWTKey), SecurityAlgorithms.HmacSha256)
 			});
 			return handler.WriteToken(token);
 		}
@@ -164,7 +177,8 @@ namespace LuminousVector.Aoba.Server
 				ClockSkew = TimeSpan.FromMinutes(1),
 				ValidIssuer = "Aoba.app",
 				ValidAudience = "Aoba",
-				IssuerSigningKey = new SymmetricSecurityKey(JWTKey)
+				IssuerSigningKey = new SymmetricSecurityKey(JWTKey),
+				ValidateIssuerSigningKey = true,
 			};
 			try
 			{
