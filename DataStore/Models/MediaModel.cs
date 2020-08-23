@@ -29,6 +29,7 @@ namespace LuminousVector.Aoba.Models
 		private static readonly Dictionary<string, MediaType> AllowedFiles = new Dictionary<string, MediaType>()
 		{
 			{ ".jpg", MediaType.Image },
+			{ ".jpeg", MediaType.Image },
 			{ ".png", MediaType.Image },
 			{ ".ico", MediaType.Image },
 			{ ".gif", MediaType.Image },
