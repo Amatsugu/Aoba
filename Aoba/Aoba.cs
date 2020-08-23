@@ -21,8 +21,6 @@ using LuminousVector.Aoba.Models;
 using LuminousVector.Aoba.Net;
 using Clipboard = System.Windows.Clipboard;
 using Timer = System.Threading.Timer;
-using Capture;
-using Capture.Interface;
 using System.Threading;
 
 namespace LuminousVector.Aoba
@@ -44,8 +42,6 @@ namespace LuminousVector.Aoba
 				_isListening = KeyHandler.IsListening = value;
 			}
 		}
-
-		public static CaptureConfig d3dCapConfig;
 
 #if DEBUG
 		private const string HOST = "http://localhost:4321";
@@ -78,18 +74,10 @@ namespace LuminousVector.Aoba
 		private static MemoryMappedFile _mFile;
 		private static Timer _uploadShellWatcher;
 		private static Dispatcher _aobaDispatcher;
-		private static CaptureProcess _curHook;
 		private static ManualResetEvent captureEvent = new ManualResetEvent(false);
 
 		internal static void Init()
 		{
-			//D3D Capture
-			d3dCapConfig = new CaptureConfig
-			{
-				Direct3DVersion = Direct3DVersion.AutoDetect,
-				ShowOverlay = false
-			};
-
 
 			//Settings
 			try
@@ -296,60 +284,12 @@ namespace LuminousVector.Aoba
 			ScreenCapture.GetWindowRect(ScreenCapture.GetForegroundWindow(), out WindowRect rect);
 			if (Settings.GameCapture)
 			{
-				var process = Process.GetProcessById(ScreenCapture.GetForgroundWindowId());
-				if (_curHook == null || _curHook.Process.Id != process.Id)
-				{
-					if (_curHook != null)
-						_curHook.Dispose();
-					_curHook = null;
-					var captureI = new CaptureInterface();
-					captureI.RemoteMessage += CaptureI_RemoteMessage;
-					try
-					{
-						_curHook = new CaptureProcess(process, d3dCapConfig, captureI);
-						Thread.Sleep(10);
-					}
-					catch
-					{
-						_curHook = null;
-					}
-				}
 			}
 			Bitmap screenCap;
-			bool captured = false;
-			if(_curHook != null)
-			{
-				captureEvent.Reset();
-				var capture = _curHook.CaptureInterface;
-				capture.BeginGetScreenshot(rect.AsRectange(), new TimeSpan(0, 0, 2), r =>
-				{
-					var screen = capture.EndGetScreenshot(r);
-
-					if (screen == null)
-					{
-						_curHook = null;
-						captureEvent.Set();
-						return;
-					}
-					if (Settings.ShowToasts && Settings.ToastCapture)
-						Notify("Screenshot Captured");
-					PublishScreen(screen.ToBitmap());
-					captured = true;
-					captureEvent.Set();
-				}, null, Capture.Interface.ImageFormat.Png);
-				captureEvent.WaitOne();
-				if (captured)
-					return;
-			}
 			screenCap = ScreenCapture.CaptureRegion(rect.AsRectange());
 			if (Settings.ShowToasts && Settings.ToastCapture)
 				Notify("Screenshot Captured");
 			PublishScreen(screenCap);
-		}
-
-		private static void CaptureI_RemoteMessage(MessageReceivedEventArgs message)
-		{
-			
 		}
 #endregion
 
