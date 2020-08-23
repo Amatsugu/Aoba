@@ -94,6 +94,8 @@ namespace LuminousVector.Aoba.Server
 			internal static IMongoCollection<BsonDocument> media;
 		}
 
+		
+
 		private static byte[] JWTKey
 		{
 			get
@@ -354,6 +356,18 @@ namespace LuminousVector.Aoba.Server
 			if (media.Ext == ".gif")
 				return $"{HOST}/i/raw/{media.id}/{media.fileName}";
 			return $"{HOST}/i/{media.id}";
+		}
+
+		internal static void DeleteImage(string id)
+		{
+			var media = GetMedia(id);
+			if (media == null)
+				return;
+			var uriName = $"{media.type}/{media.id}{media.Ext}";
+			var fileName = $"{BASE_DIR}{uriName}";
+			if (File.Exists(fileName))
+				File.Delete(fileName);
+			
 		}
 
 		internal static void RebuildDB(string userID)

@@ -61,6 +61,12 @@ namespace LuminousVector.Aoba.Server.Modules
 					return new Response() { StatusCode = HttpStatusCode.ImATeapot };
 				}
 			});
+
+			Delete("image/{id}", p =>
+			{
+				AobaCore.DeleteImage(p.id);
+				return new Response() { StatusCode = HttpStatusCode.OK };
+			});
 		}
 	}
 }
