@@ -8,6 +8,7 @@ using LuminousVector.Aoba.Server.DataStore;
 using LuminousVector.Aoba.Models;
 using LuminousVector.Aoba.Server.Models;
 using Nancy.Responses;
+using System.Text;
 
 namespace LuminousVector.Aoba.Server.Modules
 {
@@ -50,7 +51,11 @@ namespace LuminousVector.Aoba.Server.Modules
 						fileName = f.Name
 						//Ext = Path.GetExtension(fileName)
 					};
+
+
 					media.mediaStream.Position = 0;
+					if (string.IsNullOrEmpty(media.Ext))
+						media.fileName = $"{media.fileName}{GetImageExt(media.mediaStream)}";
 					//f.Value.Read(media.media, 0, (int)f.Value.Length);
 					var uid = ((UserModel)Context.CurrentUser).ID;
 					return Response.AsText(AobaCore.AddMedia(uid, media)).WithHeader("Authorization", $"Bearer {AobaCore.GetJWT(AobaCore.GetApiKey(uid), 365)}");
@@ -67,6 +72,39 @@ namespace LuminousVector.Aoba.Server.Modules
 				AobaCore.DeleteImage(p.id);
 				return new Response() { StatusCode = HttpStatusCode.OK };
 			});
+		}
+
+		private string GetImageExt(Stream media)
+		{
+			var headerBytes = new byte[16];
+			media.Read(headerBytes, 0, 16);
+			media.Position = 0;
+			// see http://www.mikekunz.com/image_file_header.html  
+			var bmp = Encoding.ASCII.GetBytes("BM");     // BMP
+			var gif = Encoding.ASCII.GetBytes("GIF");    // GIF
+			var png = new byte[] { 137, 80, 78, 71 };    // PNG
+			var png2 = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; //PNG
+			var tiff = new byte[] { 73, 73, 42 };         // TIFF
+			var tiff2 = new byte[] { 77, 77, 42 };         // TIFF
+			var jpeg = new byte[] { 255, 216, 255, 224 }; // jpeg
+			var jpeg2 = new byte[] { 255, 216, 255, 225 }; // jpeg canon
+			if (bmp.SequenceEqual(headerBytes.Take(bmp.Length)))
+				return ".bmp";
+			if (gif.SequenceEqual(headerBytes.Take(gif.Length)))
+				return ".gif";
+			if (png.SequenceEqual(headerBytes.Take(png.Length)))
+				return ".png";
+			if (png2.SequenceEqual(headerBytes.Take(png2.Length)))
+				return ".png";
+			if (tiff.SequenceEqual(headerBytes.Take(tiff.Length)))
+				return ".tiff";
+			if (tiff2.SequenceEqual(headerBytes.Take(tiff2.Length)))
+				return ".tiff";
+			if (jpeg.SequenceEqual(headerBytes.Take(jpeg.Length)))
+				return ".jpeg";
+			if (jpeg2.SequenceEqual(headerBytes.Take(jpeg2.Length)))
+				return ".jpeg";
+			return string.Empty;
 		}
 	}
 }
