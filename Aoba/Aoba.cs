@@ -480,6 +480,7 @@ namespace LuminousVector.Aoba
 			}catch(Exception e)
 			{
 				Notify($"Error: {e.Message}", "Connection Failed");
+				UserStats = null;
 			}
 		}
 

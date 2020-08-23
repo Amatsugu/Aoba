@@ -11,10 +11,11 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Models", "DataStore\Models.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aoba.ShellExtensions", "Aoba.ShellExtensions\Aoba.ShellExtensions.csproj", "{C0373B2F-2559-421B-9D6C-B197F2005169}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aoba.Server.Core", "Aoba.Server.Core\Aoba.Server.Core.csproj", "{4DD7C651-F087-43C4-B2BF-5C3B107041C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aoba.Server.Core", "Aoba.Server.Core\Aoba.Server.Core.csproj", "{4DD7C651-F087-43C4-B2BF-5C3B107041C8}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		DataStore\DataStore.projitems*{4dd7c651-f087-43c4-b2bf-5c3b107041c8}*SharedItemsImports = 5
 		DataStore\DataStore.projitems*{9003211b-6f4f-46ed-9151-5c9f326a0c06}*SharedItemsImports = 4
 		DataStore\DataStore.projitems*{a5ca15c1-fbf9-47e9-b71d-4b390ec4f8db}*SharedItemsImports = 13
 		DataStore\DataStore.projitems*{f41f019e-cfcc-46fe-9361-b9cbb41f21b4}*SharedItemsImports = 4

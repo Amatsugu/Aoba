@@ -160,7 +160,7 @@ namespace LuminousVector.Aoba
 		}
 		#endregion
 
-		private void Load()
+		private async void Load()
 		{
 			//Startup
 			RunOnStartup.IsChecked = Aoba.Settings.RunAtStart;
@@ -193,9 +193,18 @@ namespace LuminousVector.Aoba
 			//Misc
 			ClipboardAutoUpload.IsChecked = Aoba.Settings.AutoUploadFromClipboard;
 			//Account
-			if (Aoba.Settings.HasAuth)
-				ShowLoggedIn();
 			Username.Text = Aoba.Settings.Username;
+			await Aoba.UpdateStats();
+			if (Aoba.UserStats == null)
+			{
+				Aoba.Settings.AuthToken = null;
+				if (Aoba.Settings.Password != null)
+				{
+					await Aoba.Login();
+					if (Aoba.Settings.AuthToken != null)
+						ShowLoggedIn();
+				}
+			}
 			RenderKeyBinds();
 		}
 
