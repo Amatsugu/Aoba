@@ -8,15 +8,8 @@ namespace LuminousVector.Aoba.Server.Credentials
 {
 	public static class DBCredentials
 	{
-		public const string DB_User = "aoba";
-		public const string DB_Pass = "b0v2@U9e*uyS^1w*";
 		public const string DB_Name = "AobaDB";
-		public const string ApiTable = "apiKeys";
-		public const string UserTable = "users";
-		public const string MediaTable = "images";
-		public const string RegTokenTable = "regtokens";
-		public static string CONNECTION_STRING = $"mongodb://192.168.86.74:27017";
-		//public static string CONNECTION_STRING = $"mongodb://localhost:27017";
-		public static string PG_CONNECTION_STRING => $"Host={AobaCore.HOST};Username={DB_User};Password={DB_Pass};Database={DB_Name};Pooling=true";
+		//public static string CONNECTION_STRING = $"mongodb://192.168.86.28:27017";
+		public static string CONNECTION_STRING = $"mongodb://localhost:27017";
 	}
 }
