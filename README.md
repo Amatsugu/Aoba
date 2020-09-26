@@ -2,22 +2,7 @@
 <h1>Aoba</h1>
 A screen capture/upload client like puush but with game capture support and lossless image quality.
 
-<h3>Currently Implemented</h3>
-<ul>
-<li>Single Screen Capture</li>
-<li>All Screen Capture</li>
-<li>Screen Region Capture</li>
-<li>File Uploads</li>
-<li>Window Capture</li>
-<li>Game Capture (Dx 9, 10, & 11)</li>
-</ul>
-<h3>To Do</h3>
-<ul>
-<li>Game Capture (Dx 12 & OpenGL Hooks)</li>
-<li>FPS Counter Overlay</li>
-<li>Polish</li>
-<li>Web Interface</li>
-</ul>
+All Client development has been stalled indefinitely. I will only focus on development of the server and plan to use ShareX as the front end
 
 <h3>This Project uses the following:</h3>
 <ul>
