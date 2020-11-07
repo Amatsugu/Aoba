@@ -284,6 +284,7 @@ namespace LuminousVector.Aoba.Server
 
 		internal static bool RegisterUser(LoginCredentialsModel login, string token = null)
 		{
+			Console.WriteLine($"Creating new User: {login.Username}");
 			bool requireToken = true;
 			if (token == null)
 				requireToken = false;
