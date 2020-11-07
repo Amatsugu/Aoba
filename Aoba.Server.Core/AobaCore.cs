@@ -287,8 +287,6 @@ namespace LuminousVector.Aoba.Server
 			bool requireToken = true;
 			if (token == null)
 				requireToken = false;
-			if(requireToken)
-				token = Sanitize(token);
 			try
 			{
 				UserModel referer = null;
@@ -314,8 +312,9 @@ namespace LuminousVector.Aoba.Server
 					return true;
 				}
 				return false;
-			}catch
+			}catch(Exception e)
 			{
+				Console.WriteLine(e.ToString()); 
 				return false;
 			}
 		}
