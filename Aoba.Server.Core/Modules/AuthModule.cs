@@ -52,11 +52,7 @@ namespace LuminousVector.Aoba.Server.Modules
 				return (AobaCore.UserExists(Request.Body.AsString())) ? new Response { StatusCode = HttpStatusCode.NotAcceptable } : new Response { StatusCode = HttpStatusCode.OK };
 			});
 
-			Get("/regToken", p =>
-		   {
-			   var user = Context.CurrentUser as UserModel;
-			   return AobaCore.GetNewRegToken(user.ID);
-		   });
+			
 
 		}
 	}

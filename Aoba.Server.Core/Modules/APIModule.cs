@@ -22,6 +22,12 @@ namespace LuminousVector.Aoba.Server.Modules
 				return (this.Context.CurrentUser == null) ? new HtmlResponse(HttpStatusCode.Unauthorized) : null;
 			});
 
+			Get("/regToken", p =>
+			{
+				var user = Context.CurrentUser as UserModel;
+				return AobaCore.GetNewRegToken(user.ID);
+			});
+
 			Get("/userStats", _ =>
 			{
 				var uid = ((UserModel)Context.CurrentUser).ID;
