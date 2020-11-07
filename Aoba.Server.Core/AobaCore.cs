@@ -284,17 +284,15 @@ namespace LuminousVector.Aoba.Server
 
 		internal static bool RegisterUser(LoginCredentialsModel login, string token = null)
 		{
-			Console.WriteLine($"Creating new User: {login.Username}");
+			Console.WriteLine($"Creating new User: {login.Username} Token: {token}");
 			bool requireToken = true;
 			if (token == null)
 				requireToken = false;
 			try
 			{
-				UserModel referer = null;
+				UserModel referer = new UserModel(login.Username, ""); 
 				if (requireToken)
-					ValidateRegistrationToken(token);
-				else
-					referer = new UserModel(login.Username, "");
+					referer = ValidateRegistrationToken(token);
 				if (referer != null)
 				{
 					var userID = GetNewID();
