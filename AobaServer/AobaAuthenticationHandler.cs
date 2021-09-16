@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using System;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
@@ -29,7 +30,7 @@ namespace AobaServer
 				return Task.CompletedTask;
 			}
 			//Redirect to login page
-			Response.Redirect($"/auth/login?ReturnUrl={OriginalPath}");
+			Response.Redirect($"/auth/login?ReturnUrl={Uri.EscapeDataString(OriginalPath)}");
 			return Task.CompletedTask;
 		}
 

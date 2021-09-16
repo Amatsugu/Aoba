@@ -13,8 +13,9 @@ namespace AobaServer.Controllers
 	public class AuthController : Controller
 	{
 		[HttpGet("login")]
-		public IActionResult Login()
+		public IActionResult Login(string ReturnUrl)
 		{
+			ViewData["returnUrl"] = ReturnUrl;
 			return View();
 		}
 

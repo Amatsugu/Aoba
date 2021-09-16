@@ -1,4 +1,5 @@
 using AobaServer.Models;
+using AobaServer.Services;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,6 +11,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+
+using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 
 using System;
 using System.Linq;
@@ -35,7 +39,20 @@ namespace AobaServer
 #endif
 			.AddNewtonsoftJson();
 
+			var dbConfig = Configuration.GetSection("DBInfo").Get<DBCredentials>();
+			var client = new MongoClient(dbConfig.ConnectionString);
+			var db = client.GetDatabase(dbConfig.DBName);
+
+			services.AddSingleton(typeof(IMongoDatabase), db);
+
+			var gridFS = new GridFSBucket(db);
 			var authInfo = AuthInfo.LoadOrCreate("Auth.json", "aoba", "aoba");
+
+			services.AddSingleton(gridFS);
+			services.AddSingleton<AccountsService>();
+			services.AddSingleton(authInfo);
+
+
 
 			var signingKey = new SymmetricSecurityKey(authInfo.SecureKey);
 
@@ -70,7 +87,6 @@ namespace AobaServer
 					},
 					OnAuthenticationFailed = ctx =>
 					{
-						//Console.WriteLine($"[!!!] Auth Failed {ctx.HttpContext.Request.GetDisplayUrl()} \n{ctx.Exception}");
 						ctx.Response.Cookies.Append("token", "", new CookieOptions
 						{
 							MaxAge = TimeSpan.Zero,
@@ -83,6 +99,12 @@ namespace AobaServer
 				};
 				Configuration.Bind("JwtSettings", options);
 			}).AddScheme<AuthenticationSchemeOptions, AobaAuthenticationHandler>("Aoba", cfg => { });
+
+			services.AddAuthorization(o =>
+			{
+				o.AddPolicy("admin", p => p.RequireRole("admin", "dev"));
+				o.AddPolicy("dev", p => p.RequireRole("dev"));
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
