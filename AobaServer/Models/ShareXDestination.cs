@@ -36,7 +36,7 @@ namespace AobaServer.Models
 		public string Name { get; set; } = "Aoba";
 		public string DestinationType { get; set; } = "ImageUploader, TextUploader, FileUploader";
 		public string RequestMethod { get; set; } = "POST";
-		public string RequestURL { get; set; } = "https://aoba.app/api/image";
+		public string RequestURL { get; set; } = "https://aoba.app/api/media/upload";
 		public Dictionary<string, string> Headers { get; set; } = new();
 		public string Body { get; set; } = "MultipartFormData";
 		public Dictionary<string, string> Arguments { get; set; } = new() { {"name", "$filename$" } };

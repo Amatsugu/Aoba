@@ -50,6 +50,7 @@ namespace AobaServer
 
 			services.AddSingleton(gridFS);
 			services.AddSingleton<AccountsService>();
+			services.AddSingleton<MediaService>();
 			services.AddSingleton(authInfo);
 
 
