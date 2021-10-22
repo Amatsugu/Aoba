@@ -35,7 +35,7 @@ namespace AobaServer.Controllers
 			var file = await _gridFS.OpenDownloadStreamAsync(media.MediaId);
 			return media.MediaType switch
 			{
-				MediaType.Image => File(file, "image/png"),
+				MediaType.Image => File(file, media.Ext == ".gif" ? "image/gif" : "image/png"),
 				MediaType.Text => File(file, "text"),
 				MediaType.Code => File(file, "text"),
 				MediaType.Video => File(file, "video"),
