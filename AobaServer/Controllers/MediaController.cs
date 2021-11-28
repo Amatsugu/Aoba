@@ -45,6 +45,7 @@ namespace AobaServer.Controllers
 
 		[HttpGet("dl/{id}")]
 		[HttpGet("dl/{id}/{filename}")]
+		[HttpGet("{id}/raw/{filename?}")]
 		public async Task<IActionResult> Download(string id)
 		{
 			var imgId = id.ToObjectId();
