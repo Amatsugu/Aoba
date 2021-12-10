@@ -61,7 +61,7 @@ namespace AobaServer.Models
 				Media { MediaType: MediaType.Text } => $"/i/dl/{MediaId}/{MediaId}{Ext}",
 				Media { MediaType: MediaType.Code } => $"/i/dl/{MediaId}/{MediaId}{Ext}",
 				Media { MediaType: MediaType.Video } => $"/i/dl/{MediaId}/{MediaId}{Ext}",
-				_ => $"/i/{MediaId}"
+				_ => $"/i/{Id}"
 			};
 		}
 
