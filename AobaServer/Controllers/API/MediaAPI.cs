@@ -28,16 +28,18 @@ namespace AobaServer.Controllers.API
 		public async Task<IActionResult> UploadMedia([FromForm] IFormFile file)
 		{
 			var id = await _media.UploadMedia(file.OpenReadStream(), file.FileName, User.GetId());
+			var media = await _media.GetMedia(id);
 
 			return Ok(new 
 			{
-				id
+				id,
+				url = media.GetUrlString()
 			});
 		}
 
 
 		[HttpDelete("{id}")]
-		public async Task<IActionResult> Delete(string id)
+		public IActionResult Delete(string id)
 		{
 			return StatusCode(StatusCodes.Status418ImATeapot);
 		}

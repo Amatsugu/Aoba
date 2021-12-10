@@ -42,7 +42,7 @@ namespace AobaServer.Models
 		public Dictionary<string, string> Arguments { get; set; } = new() { {"name", "$filename$" } };
 		public string FileFormName { get; set; } = "file";
 		public string[] RegexList { get; set; } = new[] { "([^/]+)/?$" };
-		public string URL { get; set; } = "https://aoba.app/i/$json:id$";
+		public string URL { get; set; } = "https://aoba.app$json:url$";
 		public string ThumbnailURL { get; set; } 
 		public string DeletionURL { get; set; }
 	}

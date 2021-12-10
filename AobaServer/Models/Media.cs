@@ -52,6 +52,19 @@ namespace AobaServer.Models
 			{ ".py", MediaType.Code },
 		};
 
+		public string GetUrlString()
+		{
+			return this switch
+			{
+				Media { Ext: ".gif"} => $"/i/dl/{MediaId}/{MediaId}.gif",
+				Media { MediaType: MediaType.Raw } => $"/i/dl/{MediaId}/{MediaId}{Ext}",
+				Media { MediaType: MediaType.Text } => $"/i/dl/{MediaId}/{MediaId}{Ext}",
+				Media { MediaType: MediaType.Code } => $"/i/dl/{MediaId}/{MediaId}{Ext}",
+				Media { MediaType: MediaType.Video } => $"/i/dl/{MediaId}/{MediaId}{Ext}",
+				_ => $"/i/{MediaId}"
+			};
+		}
+
 		public static MediaType GetMediaType(string filename)
 		{
 			string ext = Path.GetExtension(filename);
