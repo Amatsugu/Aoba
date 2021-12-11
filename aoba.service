@@ -4,7 +4,7 @@ After= mongodb.service nginx.service
 [Service]
 Type=simple
 SyslogIdentifier=Aoba
-ExecStart=/home/ina/Sites/Aoba/run.sh
+ExecStart=/Sites/runAoba.sh
 #Environment=DOTNET_ROOT=/opt/rh/rh-dotnet31/root/usr/lib64/dotnet
 
 KillSignal=SIGINT
@@ -16,6 +16,6 @@ Restart=always
 # amount of time to wait before restarting the service
 RestartSec=5
 
-WorkingDirectory=/home/ina/Sites/Aoba/Aoba/Aoba.Server.Core/
+WorkingDirectory=/Sites/Aoba/AobaServer/
 [Install]
 WantedBy=multi-user.target
