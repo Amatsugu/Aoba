@@ -22,6 +22,10 @@ namespace AobaServer
 				.UseSystemd()
 				.ConfigureWebHostDefaults(webBuilder =>
 				{
+					webBuilder.UseKestrel(opt =>
+					{
+						opt.Limits.MaxRequestBodySize = null;
+					});
 					webBuilder.UseStartup<Startup>();
 				});
 	}
