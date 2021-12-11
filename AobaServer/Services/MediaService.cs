@@ -1,6 +1,8 @@
 ﻿using AobaServer.Models;
 using AobaServer.Utilz;
 
+using Microsoft.AspNetCore.Mvc;
+
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
@@ -25,6 +27,8 @@ namespace AobaServer.Services
 			_media = db.GetCollection<Media>("media");
 		}
 
+		[RequestFormLimits(MultipartBodyLengthLimit = (long)1e9)]
+		[RequestSizeLimit((long)1e9)]
 		public async Task<ObjectId> UploadMedia(Stream data, string filename, ObjectId owner)
 		{
 			var id = ObjectId.GenerateNewId();
