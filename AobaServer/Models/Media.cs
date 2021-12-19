@@ -56,11 +56,11 @@ namespace AobaServer.Models
 		{
 			return this switch
 			{
-				Media { Ext: ".gif"} => $"/i/dl/{Id}/{Filename}.gif",
-				Media { MediaType: MediaType.Raw } => $"/i/dl/{Id}/{Filename}{Ext}",
-				Media { MediaType: MediaType.Text } => $"/i/dl/{Id}/{Filename}{Ext}",
-				Media { MediaType: MediaType.Code } => $"/i/dl/{Id}/{Filename}{Ext}",
-				Media { MediaType: MediaType.Video } => $"/i/dl/{Id}/{Filename}{Ext}",
+				Media { Ext: ".gif"} => $"/i/dl/{Id}/{Filename}",
+				Media { MediaType: MediaType.Raw } => $"/i/dl/{Id}/{Filename}",
+				Media { MediaType: MediaType.Text } => $"/i/dl/{Id}/{Filename}",
+				Media { MediaType: MediaType.Code } => $"/i/dl/{Id}/{Filename}",
+				Media { MediaType: MediaType.Video } => $"/i/dl/{Id}/{Filename}",
 				_ => $"/i/{Id}"
 			};
 		}
