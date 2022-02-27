@@ -54,13 +54,16 @@ namespace AobaServer.Models
 
 		public string GetUrlString()
 		{
+			var fn = Path.GetFileNameWithoutExtension(Filename);
+			fn = Uri.EscapeDataString(fn);
+
 			return this switch
 			{
-				Media { Ext: ".gif"} => $"/i/dl/{Id}/{Filename}",
-				Media { MediaType: MediaType.Raw } => $"/i/dl/{Id}/{Filename}",
-				Media { MediaType: MediaType.Text } => $"/i/dl/{Id}/{Filename}",
-				Media { MediaType: MediaType.Code } => $"/i/dl/{Id}/{Filename}",
-				Media { MediaType: MediaType.Video } => $"/i/dl/{Id}/{Filename}",
+				Media { Ext: ".gif"} => $"/i/dl/{Id}/{fn}{Ext}",
+				Media { MediaType: MediaType.Raw } => $"/i/dl/{Id}/{fn}{Ext}",
+				Media { MediaType: MediaType.Text } => $"/i/dl/{Id}/{fn}{Ext}",
+				Media { MediaType: MediaType.Code } => $"/i/dl/{Id}/{fn}{Ext}",
+				Media { MediaType: MediaType.Video } => $"/i/dl/{Id}/{fn}{Ext}",
 				_ => $"/i/{Id}"
 			};
 		}
