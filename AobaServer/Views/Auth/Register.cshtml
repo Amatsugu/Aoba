@@ -1,5 +1,16 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
 }
+@section Scripts{
+	<script src="~/js/Auth/register.js" asp-append-version="true"></script>
+}
+@model string
+
+<form data-token="@Model">
+	<label>Username</label>
+	<input type="text" autocomplete="username" name="username"/>
+
+	<label>Password</label>
+	<input type="password" autocomplete="username" name="password"/>
+
+	<input type="submit" value="Register"/>
+</form>
