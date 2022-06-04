@@ -39,9 +39,10 @@ namespace AobaServer.Controllers.API
 
 
 		[HttpDelete("{id}")]
-		public IActionResult Delete(string id)
+		public async Task<IActionResult> Delete(string id)
 		{
-			return StatusCode(StatusCodes.Status418ImATeapot);
+			await _media.DeleteMediaAsync(id.ToObjectId());
+			return Ok();
 		}
 	}
 }

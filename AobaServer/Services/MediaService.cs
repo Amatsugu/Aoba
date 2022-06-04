@@ -56,6 +56,11 @@ namespace AobaServer.Services
 			return media.Id;
 		}
 
+		public Task DeleteMediaAsync(ObjectId id)
+		{
+			return _media.DeleteOneAsync(m => m.Id == id);
+		}
+
 		public Task<Media> GetMedia(string legacyId)
 		{
 			return _media.Find(m => m.LegacyId == legacyId).FirstOrDefaultAsync();
