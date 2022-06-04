@@ -13,6 +13,5 @@
 		}).done(res => {
 			window.location.assign("/");
 		});
-
 	});
 });
