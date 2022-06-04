@@ -22,7 +22,7 @@ namespace AobaServer.Controllers
 		[HttpGet("register/{token}")]
 		public IActionResult Register(string token)
 		{
-			return View(token);
+			return View("Register", token);
 		}
 	}
 }
