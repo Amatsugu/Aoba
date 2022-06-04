@@ -64,8 +64,16 @@ namespace AobaServer.Services
 
 		public async Task<ObjectId> GetRegistrationToken(ObjectId id)
 		{
+			var user = await _users.Find(u => u.Id == id).FirstOrDefaultAsync();
+			if (user == null)
+				throw new ArgumentException("User not found", nameof(id));
 			var token = ObjectId.GenerateNewId();
-			var update = Builders<UserAccount>.Update.Push(u => u.RegTokens, token);
+
+			user.RegTokens ??= new List<ObjectId>();
+
+			user.RegTokens.Add(token);
+
+			var update = Builders<UserAccount>.Update.Set(u => u.RegTokens, user.RegTokens);
 			await _users.UpdateOneAsync(u => u.Id == id, update);
 			return token;
 		}

@@ -22,7 +22,7 @@ namespace AobaServer.Models
 		public string PasswordHash { get; set; }
 		public string Role { get; set; }
 		public ObjectId[] ApiKeys { get; set; }
-		public ObjectId[] RegTokens { get; set; }
+		public List<ObjectId> RegTokens { get; set; }
 
 		internal string GetToken(AuthInfo authInfo)
 		{
