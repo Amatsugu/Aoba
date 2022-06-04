@@ -4,8 +4,8 @@
 
 	var token = form.data("token");
 
-	form.on("submit", () => {
-
+	form.on("submit", f => {
+		f.preventDefault();
 		$.ajax({
 			url: `/api/auth/register/${token}`,
 			method: "POST",
