@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -52,6 +53,12 @@ namespace AobaServer
 			services.AddSingleton<AccountsService>();
 			services.AddSingleton<MediaService>();
 			services.AddSingleton(authInfo);
+
+			services.Configure<FormOptions>(opt =>
+			{
+				opt.ValueLengthLimit = int.MaxValue;
+				opt.MultipartBodyLengthLimit = int.MaxValue;
+			});
 
 
 
