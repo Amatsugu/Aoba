@@ -32,6 +32,7 @@ namespace AobaServer.Controllers
 			var media = imgId == default ? await _media.GetMedia(id) : await _media.GetMedia(imgId);
 			if (media == null)
 				return NotFound();
+			await _media.IncrementView(media.Id);
 			var file = await _gridFS.OpenDownloadStreamAsync(media.MediaId);
 			return media.MediaType switch
 			{
@@ -52,6 +53,7 @@ namespace AobaServer.Controllers
 			var media = imgId == default ? await _media.GetMedia(id) : await _media.GetMedia(imgId);
 			if (media == null)
 				return NotFound();
+			await _media.IncrementView(media.Id);
 			var file = await _gridFS.OpenDownloadStreamAsync(media.MediaId);
 			return File(file, "application/octet-stream");
 		}

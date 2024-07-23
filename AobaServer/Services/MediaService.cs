@@ -70,5 +70,11 @@ namespace AobaServer.Services
 		{
 			return _media.Find(m => m.Id == id).FirstOrDefaultAsync();
 		}
+
+		public Task IncrementView(ObjectId id)
+		{
+			var update = Builders<Media>.Update.Inc(m => m.ViewCount, 1);
+			return _media.UpdateOneAsync(m => m.Id == id, update);
+		}
 	}
 }
