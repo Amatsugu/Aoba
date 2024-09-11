@@ -4,6 +4,8 @@ using AobaServer.Utilz;
 
 using Microsoft.AspNetCore.Mvc;
 
+using MimeTypes;
+
 using MongoDB.Driver.GridFS;
 
 using System;
@@ -34,14 +36,17 @@ namespace AobaServer.Controllers
 				return NotFound();
 			await _media.IncrementView(media.Id);
 			var file = await _gridFS.OpenDownloadStreamAsync(media.MediaId);
-			return media.MediaType switch
-			{
-				MediaType.Image => File(file, media.Ext == ".gif" ? "image/gif" : "image/png"),
-				MediaType.Text => File(file, "text"),
-				MediaType.Code => File(file, "text"),
-				MediaType.Video => File(file, "video"),
-				_ => File(file, "application/octet-stream")
-			};
+			if (!MimeTypeMap.TryGetMimeType(media.Ext, out var mimeType))
+				mimeType = "application/octet-stream";
+			return File(file, mimeType);
+			//return media.MediaType switch
+			//{
+			//	MediaType.Image => File(file, media.Ext == ".gif" ? "image/gif" : "image/png"),
+			//	MediaType.Text => File(file, "text"),
+			//	MediaType.Code => File(file, "text"),
+			//	MediaType.Video => File(file, "video"),
+			//	_ => File(file, "application/octet-stream")
+			//};
 		}
 
 		[HttpGet("dl/{id}")]
