@@ -59,11 +59,11 @@ namespace AobaServer.Models
 
 			return this switch
 			{
-				Media { Ext: ".gif"} => $"/i/dl/{Id}/{fn}{Ext}",
+				//Media { Ext: ".gif"} => $"/i/dl/{Id}/{fn}{Ext}",
 				Media { MediaType: MediaType.Raw } => $"/i/dl/{Id}/{fn}{Ext}",
 				Media { MediaType: MediaType.Text } => $"/i/dl/{Id}/{fn}{Ext}",
 				Media { MediaType: MediaType.Code } => $"/i/dl/{Id}/{fn}{Ext}",
-				Media { MediaType: MediaType.Video } => $"/i/dl/{Id}/{fn}{Ext}",
+				//Media { MediaType: MediaType.Video } => $"/i/dl/{Id}/{fn}{Ext}",
 				_ => $"/i/{Id}"
 			};
 		}
