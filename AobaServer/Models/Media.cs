@@ -23,6 +23,7 @@ namespace AobaServer.Models
 		public static readonly Dictionary<string, MediaType> KnownTypes = new()
 		{
 			{ ".jpg", MediaType.Image },
+			{ ".avif", MediaType.Image },
 			{ ".jpeg", MediaType.Image },
 			{ ".png", MediaType.Image },
 			{ ".apng", MediaType.Image },
