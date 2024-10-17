@@ -38,7 +38,7 @@ namespace AobaServer.Controllers
 			var file = await _gridFS.OpenDownloadStreamAsync(media.MediaId);
 			if (!MimeTypeMap.TryGetMimeType(media.Ext, out var mimeType))
 				mimeType = "application/octet-stream";
-			return File(file, mimeType);
+			return File(file, mimeType, true);
 			//return media.MediaType switch
 			//{
 			//	MediaType.Image => File(file, media.Ext == ".gif" ? "image/gif" : "image/png"),
@@ -60,7 +60,7 @@ namespace AobaServer.Controllers
 				return NotFound();
 			await _media.IncrementView(media.Id);
 			var file = await _gridFS.OpenDownloadStreamAsync(media.MediaId);
-			return File(file, "application/octet-stream");
+			return File(file, "application/octet-stream", true);
 		}
 	}
 }
