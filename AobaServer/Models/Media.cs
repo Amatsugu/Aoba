@@ -18,6 +18,7 @@ namespace AobaServer.Models
 		public string Ext { get; set; }
 		public int ViewCount { get; set; }
 		public ObjectId Owner { get; set; }
+		public DateTime UploadDate { get; set; }
 
 
 		public static readonly Dictionary<string, MediaType> KnownTypes = new()

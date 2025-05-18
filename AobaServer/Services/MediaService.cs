@@ -49,7 +49,8 @@ namespace AobaServer.Services
 				MediaId = mediaId,
 				MediaType = Media.GetMediaType(filename),
 				ViewCount = 0,
-				Owner = owner
+				Owner = owner,
+				UploadDate = DateTime.Now,
 			};
 
 			await _media.InsertOneAsync(media);
